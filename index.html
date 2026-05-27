@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PilotWx - METAR/TAF/D-ATIS</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>PilotWx</h1>
+        <div id="status" class="status">Online</div>
+    </header>
+
+    <main>
+        <div class="search">
+            <input type="text" id="icao-input" placeholder="Enter ICAO (e.g. KSEA)" maxlength="4">
+            <button onclick="fetchWeather()">Get Weather</button>
+            <button onclick="addToFavorites()">Save</button>
+        </div>
+
+        <div class="favorites">
+            <h3>Favorites</h3>
+            <div id="favorites-list"></div>
+        </div>
+
+        <div id="airport-list" class="airport-list">
+            <h3>All US Weather Airports</h3>
+            <input type="text" id="airport-search" placeholder="Search airports..." onkeyup="filterAirports()">
+            <button onclick="updateAirportList()">Update List</button>
+            <div id="airports-container"></div>
+        </div>
+
+        <div id="weather-display" class="weather-display hidden">
+            <!-- Populated by JS -->
+        </div>
+    </main>
+
+    <footer>
+        <p>Data from AviationWeather.gov • For informational use only</p>
+        <small>Last updated: <span id="last-updated"></span></small>
+    </footer>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
