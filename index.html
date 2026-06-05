@@ -393,6 +393,59 @@ function atisUrl(icao) {
   return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
 }
 
+// ─── D-ATIS AIRPORT LIST ─────────────────────────────────────
+// Airports with FAA Digital ATIS (D-ATIS). Source: FAA / datis.clowd.io
+// If an entered ICAO is in this set, D-ATIS is fetched first and shown by default.
+const DATIS_AIRPORTS = new Set([
+  // Northeast
+  'KBOS','KBDL','KORH','KMHT','KPVD','KALB','KBGR','KBTV',
+  'KJFK','KLGA','KEWR','KTEB','KHPN','KISP','KSWF',
+  'KPHL','KPNE','KABE','KLNS','KRDG','KAVP',
+  'KBWI','KDCA','KIAD','KHEF',
+  // Southeast
+  'KATL','KCLT','KRDU','KGSO','KCHS','KMYR','KGSP',
+  'KMCO','KMIA','KFLL','KTPA','KSFB','KPBI','KRSW','KPIE','KGNV','KTLH','KPNS','KVPS','KDAB',
+  'KJAX','KSAV','KAVL',
+  'KBHM','KHSV','KMOB',
+  'KMEM','KBNA','KTYS','KCHA',
+  'KMSY','KBTR','KLFT','KSHV',
+  'KJAN','KGPT',
+  // Midwest
+  'KORD','KMDW','KARR','KDPA','KGYY',
+  'KDET','KDTW','KFNT','KLAN','KGRR','KAZO',
+  'KMSN','KMKE','KGRB',
+  'KDSM','KCID','KDBQ',
+  'KSTL','KMCI','KSGF',
+  'KIND','KSBN','KEVV','KFWA',
+  'KCMH','KCLE','KYNG','KCAK','KTOL','KDAY',
+  'KPIT',
+  'KOMA','KLNK',
+  'KFAR','KBIS','KGFK',
+  'KRAP','KFSD',
+  // South Central
+  'KDFW','KDAL','KAUS','KSAT','KHOU','KIAH','KELP','KAMA','KLBB','KABI','KMAF','KTYR','KACT',
+  'KOKC','KTUL','KLAW',
+  'KLIT','KFSM',
+  // Mountain / West
+  'KDEN','KCOS','KGJT','KPUB',
+  'KPHX','KTUS','KPRC','KIWA','KSDL',
+  'KABQ','KROW',
+  'KSLC','KOGD','KPVU',
+  'KLAS','KRNO',
+  'KBOI','KIDA',
+  'KBZN','KGTF','KBIL','KHLN','KMSO',
+  // West Coast
+  'KSEA','KBFI','KPAE','KOLM','KGEG','KYKM',
+  'KPDX','KEUG','KMFR','KRDM',
+  'KSFO','KOAK','KSJC','KSMF','KFAT','KBUR','KLAX','KSNA','KONT','KLGB','KSAN','KPSP',
+  'KSBA','KSBP','KMRY',
+  // Hawaii / Alaska
+  'PHNL','PHOG','PHKO','PHLI',
+  'PANC','PAFA','PAJN','PAKN','PADQ',
+  // Puerto Rico
+  'TJSJ','TJBQ',
+]);
+
 // ─── UTC CLOCK ────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
@@ -626,6 +679,52 @@ function renderTaf(data) {
   document.getElementById('tafContent').innerHTML = html;
 }
 
+// ─── ATIS HELPERS ────────────────────────────────────────────
+// datis.clowd.io returns: { airport, type, datis }
+// The `datis` string looks like:
+//   "[KJFK ATIS INFORMATION S 2354Z ...] or [... INFORMATION SIERRA 2354Z ...]"
+// We parse out the information letter and the Zulu time from that text.
+
+function parseAtisInfoCode(text) {
+  if (!text) return '?';
+  // "INFORMATION S " or "INFORMATION SIERRA " (spelled-out NATO phonetic)
+  const nato = {
+    ALPHA:'A', BRAVO:'B', CHARLIE:'C', DELTA:'D', ECHO:'E', FOXTROT:'F',
+    GOLF:'G', HOTEL:'H', INDIA:'I', JULIET:'J', KILO:'K', LIMA:'L',
+    MIKE:'M', NOVEMBER:'N', OSCAR:'O', PAPA:'P', QUEBEC:'Q', ROMEO:'R',
+    SIERRA:'S', TANGO:'T', UNIFORM:'U', VICTOR:'V', WHISKEY:'W',
+    XRAY:'X', YANKEE:'Y', ZULU:'Z',
+  };
+  // Try single-letter first: "INFORMATION K " or "INFO K "
+  const single = text.match(/\bINFO(?:RMATION)?\s+([A-Z])\b/i);
+  if (single) return single[1].toUpperCase();
+  // Try NATO phonetic
+  const phonetic = text.match(/\bINFO(?:RMATION)?\s+([A-Z]+)\b/i);
+  if (phonetic) {
+    const letter = nato[phonetic[1].toUpperCase()];
+    if (letter) return letter;
+  }
+  return '?';
+}
+
+function parseAtisTime(text) {
+  if (!text) return null;
+  // e.g. "2354Z" or "0012Z"
+  const m = text.match(/\b(\d{4})Z\b/);
+  if (!m) return null;
+  return m[1]; // e.g. "2354"
+}
+
+function atisAgeMinutes(timeStr) {
+  if (!timeStr || timeStr.length !== 4) return null;
+  const now = new Date();
+  const obsMin = parseInt(timeStr.slice(0,2)) * 60 + parseInt(timeStr.slice(2,4));
+  const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
+  let diff = nowMin - obsMin;
+  if (diff < 0) diff += 1440;
+  return diff;
+}
+
 // ─── ATIS RENDER ─────────────────────────────────────────────
 function renderAtis(atis) {
   if (!atis || !atis.length) {
@@ -644,26 +743,43 @@ function renderAtis(atis) {
   document.getElementById('tabAtis').disabled = false;
 
   const a = atis[0];
+  const datisText = a.datis || a.text || '';
+  const infoCode  = parseAtisInfoCode(datisText);
+  const timeStr   = parseAtisTime(datisText);
+  const ageMin    = atisAgeMinutes(timeStr);
+
+  // Age label + colour class (same thresholds as METAR)
+  let ageLabel = timeStr ? `${timeStr.slice(0,2)}:${timeStr.slice(2,4)}Z` : '';
+  let ageCls   = '';
+  if (ageMin !== null) {
+    ageLabel = `${ageMin}m ago · ${timeStr.slice(0,2)}:${timeStr.slice(2,4)}Z`;
+    ageCls   = ageMin < 65 ? 'fresh' : ageMin < 120 ? 'stale' : 'old';
+  }
+
+  const facilityType = a.type || a.facility_type || 'ATIS';
+
   let html = `<div class="atis-card">
     <div class="atis-header">
       <div>
         <div class="wx-card-title">D-ATIS · ${currentICAO}</div>
-        <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">${a.facility_type || a.type || 'ATIS'}</div>
+        <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">${facilityType}</div>
       </div>
-      <div class="atis-info-code">${a.information_code || a.info || '?'}</div>
+      <div style="text-align:right">
+        <div class="atis-info-code">${infoCode}</div>
+        ${ageLabel ? `<div class="wx-card-age ${ageCls}" style="margin-top:2px">${ageLabel}</div>` : ''}
+      </div>
     </div>
     <div class="atis-body">`;
 
-  // datis.clowd.io returns { datis, airport, type }
-  if (a.datis) {
-    html += `<div style="line-height:1.9">${a.datis}</div>`;
+  if (datisText) {
+    html += `<div style="line-height:1.9">${datisText}</div>`;
   } else {
     const fields = [
       ['Time', a.time], ['Wind', a.wind], ['Visibility', a.visibility],
       ['Sky', a.sky_condition], ['Temp/Dew', a.temp_dewpoint],
       ['Altimeter', a.altimeter], ['Runway', a.runway_in_use],
       ['Approaches', a.approaches_in_use], ['NOTAMs', a.notams],
-      ['Remarks', a.remarks], ['Text', a.text],
+      ['Remarks', a.remarks],
     ];
     fields.forEach(([label, val]) => {
       if (val) html += `<div class="atis-line"><span class="atis-key">${label}</span>${val}</div>`;
@@ -697,47 +813,62 @@ async function fetchWeather() {
   currentICAO = raw;
   addHistory(raw);
 
+  const hasDatis = DATIS_AIRPORTS.has(raw);
+
+  // Set loading states
   document.getElementById('metarContent').innerHTML = `<div class="loader"><div class="spinner"></div>Fetching METAR for ${raw}…</div>`;
   document.getElementById('tafContent').innerHTML   = `<div class="loader"><div class="spinner"></div>Fetching TAF for ${raw}…</div>`;
-  document.getElementById('atisContent').innerHTML  = `<div class="loader"><div class="spinner"></div>Checking D-ATIS for ${raw}…</div>`;
+  document.getElementById('atisContent').innerHTML  = `<div class="loader"><div class="spinner"></div>${hasDatis ? 'Fetching' : 'Checking'} D-ATIS for ${raw}…</div>`;
   document.getElementById('tabAtis').disabled = true;
   document.getElementById('tabTaf').disabled  = true;
-  switchTab('metar');
 
-  // ── METAR ──
-  try {
-    const data = await safeFetch(metarUrl(raw));
-    if (!data || data.length === 0) {
-      document.getElementById('metarContent').innerHTML =
-        `<div class="error-msg">No METAR found for ${raw}. Verify the ICAO identifier.</div>
-         <div class="empty-state"><p>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
-    } else {
-      renderMetar(data[0]);
-    }
-  } catch(e) {
-    document.getElementById('metarContent').innerHTML =
-      `<div class="error-msg">METAR fetch failed: ${e.message}</div>
-       <div class="empty-state"><p>Check your connection and try again.</p></div>`;
-  }
+  if (hasDatis) {
+    // D-ATIS airport: fetch ATIS first, show that tab, then load METAR/TAF in background
+    switchTab('atis');
 
-  // ── TAF ──
-  try {
-    const data = await safeFetch(tafUrl(raw));
-    renderTaf(Array.isArray(data) ? data : []);
-  } catch(e) {
-    renderTaf([]);
-  }
-
-  // ── D-ATIS ──
-  try {
-    const data = await safeFetch(atisUrl(raw), 10000);
-    if (Array.isArray(data) && data.length > 0) {
-      renderAtis(data);
-    } else {
+    // Fetch D-ATIS first
+    try {
+      const data = await safeFetch(atisUrl(raw), 10000);
+      renderAtis(Array.isArray(data) && data.length > 0 ? data : []);
+    } catch(e) {
       renderAtis([]);
     }
-  } catch(e) {
-    renderAtis([]);
+
+    // Then METAR + TAF concurrently
+    const [metarResult, tafResult] = await Promise.allSettled([
+      safeFetch(metarUrl(raw)),
+      safeFetch(tafUrl(raw)),
+    ]);
+
+    if (metarResult.status === 'fulfilled' && metarResult.value?.length) {
+      renderMetar(metarResult.value[0]);
+    } else {
+      document.getElementById('metarContent').innerHTML =
+        `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
+         <div class="empty-state"><p>Check your connection and try again.</p></div>`;
+    }
+    renderTaf(tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) ? tafResult.value : []);
+
+  } else {
+    // Non-D-ATIS airport: show METAR tab, fetch all three concurrently
+    switchTab('metar');
+
+    const [metarResult, tafResult, atisResult] = await Promise.allSettled([
+      safeFetch(metarUrl(raw)),
+      safeFetch(tafUrl(raw)),
+      safeFetch(atisUrl(raw), 10000),
+    ]);
+
+    if (metarResult.status === 'fulfilled' && metarResult.value?.length) {
+      renderMetar(metarResult.value[0]);
+    } else {
+      document.getElementById('metarContent').innerHTML =
+        `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
+         <div class="empty-state"><p>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
+    }
+    renderTaf(tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) ? tafResult.value : []);
+    renderAtis(atisResult.status === 'fulfilled' && Array.isArray(atisResult.value) && atisResult.value.length > 0
+      ? atisResult.value : []);
   }
 }
 
