@@ -1,5 +1,5 @@
-<script>
-// app.js
+// pilot-pwa/app.js - Clean version with AVWX.rest (CORS-friendly)
+
 let airports = [];
 
 const sampleAirports = [
@@ -27,6 +27,7 @@ async function loadAirports() {
 
 function renderAirportList(filtered = null) {
   const container = document.getElementById('airports-container');
+  if (!container) return;
   container.innerHTML = '';
   const list = filtered || airports;
   list.forEach(apt => {
@@ -35,7 +36,7 @@ function renderAirportList(filtered = null) {
     div.textContent = `${apt.icao} - ${apt.name} (${apt.city}, ${apt.state})`;
     div.onclick = () => {
       document.getElementById('icao-input').value = apt.icao;
-      fetchWeather(apt.icao);   // Pass ICAO explicitly
+      fetchWeather();
     };
     container.appendChild(div);
   });
@@ -52,26 +53,24 @@ function filterAirports() {
 }
 
 async function updateAirportList() {
-  const status = document.getElementById('status');
-  status.textContent = 'Updating...';
-  alert("In a full version this would fetch a large airports.json. For now using sample list.");
-  status.textContent = 'Ready';
+  alert("In a full version this would download a large list of US airports. Using sample list for now.");
 }
 
-async function fetchWeather(forcedIcao = null) {
-  let icao = forcedIcao || document.getElementById('icao-input').value.trim().toUpperCase();
+async function fetchWeather() {
+  const icaoInput = document.getElementById('icao-input');
+  let icao = icaoInput.value.trim().toUpperCase();
 
-  if (!icao || icao.length !== 4 || !/^[A-Z0-9]{4}$/.test(icao)) {
+  if (!icao || icao.length !== 4) {
     alert('Please enter a valid 4-letter ICAO code (e.g. KLAX)');
     return;
   }
 
   const display = document.getElementById('weather-display');
   display.classList.remove('hidden');
-  display.innerHTML = '<p>Loading weather for ' + icao + '...</p>';
+  display.innerHTML = `<p>Loading weather for ${icao}...</p>`;
 
   try {
-    // Use AVWX.rest (CORS-enabled)
+    // Use AVWX.rest - CORS enabled and reliable
     const [metarRes, tafRes] = await Promise.all([
       fetch(`https://avwx.rest/api/metar/${icao}`),
       fetch(`https://avwx.rest/api/taf/${icao}`)
@@ -80,15 +79,16 @@ async function fetchWeather(forcedIcao = null) {
     const metar = metarRes.ok ? await metarRes.json() : null;
     const taf = tafRes.ok ? await tafRes.json() : null;
 
-    let html = `<h2>${icao} — ${metar?.station?.name || 'Airport'}</h2>`;
+    let html = `<h2>${icao} — ${metar?.station?.name || 'Unknown Airport'}</h2>`;
 
     if (metar) {
       html += `
         <div class="report">
-          <h3>METAR <span class="flightcat-${(metar.flight_rules || 'unknown').toLowerCase()}">${(metar.flight_rules || 'N/A').toUpperCase()}</span></h3>
-          <pre>${metar.raw || 'No raw METAR'}</pre>
-          <p>Wind: ${metar.wind_direction?.repr || '—'} @ ${metar.wind_speed?.repr || '—'} kt</p>
-          <p>Vis: ${metar.visibility?.repr || '—'} | Temp: ${metar.temperature?.repr || '—'}°C</p>
+          <h3>METAR <span class="fltcat ${metar.flight_rules?.toLowerCase() || 'unknown'}">${(metar.flight_rules || 'N/A').toUpperCase()}</span></h3>
+          <pre class="raw">${metar.raw || 'No raw data'}</pre>
+          <p><strong>Wind:</strong> ${metar.wind_direction?.repr || '—'}° / ${metar.wind_speed?.repr || '—'} kt</p>
+          <p><strong>Visibility:</strong> ${metar.visibility?.repr || '—'}</p>
+          <p><strong>Temp/Dew:</strong> ${metar.temperature?.repr || '—'}°C / ${metar.dewpoint?.repr || '—'}°C</p>
         </div>`;
     }
 
@@ -96,21 +96,21 @@ async function fetchWeather(forcedIcao = null) {
       html += `
         <div class="report">
           <h3>TAF</h3>
-          <pre>${taf.raw || 'No TAF available'}</pre>
+          <pre class="raw">${taf.raw || 'No TAF available'}</pre>
         </div>`;
     }
 
     html += `
       <div class="report">
         <h3>D-ATIS / AWOS</h3>
-        <p>Use official frequencies from Chart Supplement. METAR is often the best real-time proxy.</p>
+        <p>Check official frequencies in the Chart Supplement. METAR is the best real-time proxy.</p>
       </div>`;
 
     display.innerHTML = html;
     document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
   } catch (e) {
     console.error(e);
-    display.innerHTML = `<p class="error">Error fetching data.<br>Try again or check your internet connection.</p>`;
+    display.innerHTML = `<p class="error">Error fetching data.<br>Check your internet connection and try again.</p>`;
   }
 }
 
@@ -126,16 +126,21 @@ function addToFavorites() {
 }
 
 function renderFavorites() {
-  const list = document.getElementById('favorites-list');
+  const container = document.getElementById('favorites-list');
+  if (!container) return;
   const favs = JSON.parse(localStorage.getItem('favorites') || '[]');
-  list.innerHTML = favs.map(icao => 
-    `<div class="airport-item" onclick="fetchWeather('${icao}')">${icao}</div>`
+  container.innerHTML = favs.map(icao => 
+    `<div class="airport-item" onclick="fetchWeatherFromFav('${icao}')">${icao}</div>`
   ).join('');
 }
 
-// Init
+function fetchWeatherFromFav(icao) {
+  document.getElementById('icao-input').value = icao;
+  fetchWeather();
+}
+
+// Initialize
 window.onload = () => {
   loadAirports();
   renderFavorites();
 };
-</script>
