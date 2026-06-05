@@ -1,24 +1,37 @@
-self.addEventListener('fetch', event => {
-    const url = event.request.url;
+const CACHE = 'pilotwx-v1';
+const SHELL = ['/', '/index.html'];
 
-    // Network-first for weather APIs
-    if (url.includes('avwx.rest')) {
-        event.respondWith(
-            fetch(event.request)
-                .then(response => {
-                    const cloned = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
-                    return response;
-                })
-                .catch(() => caches.match(event.request))
-        );
-        return;
-    }
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
 
-    // Cache-first for static files
-    event.respondWith(
-        caches.match(event.request).then(response => 
-            response || fetch(event.request)
-        )
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Network-first for API calls (METAR, ATIS) — fall back to cache on fail
+  if (url.hostname.includes('aviationweather') || url.hostname.includes('datis')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(resp => {
+          const clone = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return resp;
+        })
+        .catch(() => caches.match(e.request))
     );
+    return;
+  }
+
+  // Cache-first for app shell
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
+  );
 });
