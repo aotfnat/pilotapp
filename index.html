@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0a0e14" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PilotWx" />
@@ -39,23 +40,18 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Scanline overlay */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,212,255,0.012) 2px,
-        rgba(0,212,255,0.012) 4px
+        0deg, transparent, transparent 2px,
+        rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px
       );
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* ── HEADER ─────────────────────────────────── */
     header {
       display: flex;
       align-items: center;
@@ -68,40 +64,13 @@
       z-index: 100;
     }
 
-    .logo {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
+    .logo { display: flex; align-items: baseline; gap: 6px; }
+    .logo-mark { font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: -1px; }
+    .logo-sub  { font-family: var(--sans); font-weight: 300; font-size: 11px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; }
 
-    .logo-mark {
-      font-family: var(--mono);
-      font-size: 22px;
-      color: var(--accent);
-      letter-spacing: -1px;
-      line-height: 1;
-    }
+    .utc-clock { font-family: var(--mono); font-size: 13px; color: var(--text-dim); text-align: right; line-height: 1.4; }
+    .utc-time  { color: var(--accent); font-size: 16px; }
 
-    .logo-sub {
-      font-family: var(--sans);
-      font-weight: 300;
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
-
-    .utc-clock {
-      font-family: var(--mono);
-      font-size: 13px;
-      color: var(--text-dim);
-      text-align: right;
-      line-height: 1.4;
-    }
-
-    .utc-time { color: var(--accent); font-size: 16px; }
-
-    /* ── SEARCH ─────────────────────────────────── */
     .search-bar {
       padding: 14px 16px;
       background: var(--bg2);
@@ -124,9 +93,8 @@
       padding: 10px 14px;
       outline: none;
       transition: border-color 0.15s;
-      width: 100%;
+      min-width: 0;
     }
-
     .icao-input::placeholder { color: var(--text-dim); letter-spacing: 2px; font-size: 16px; }
     .icao-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,212,255,0.12); }
 
@@ -144,11 +112,8 @@
       cursor: pointer;
       white-space: nowrap;
       transition: background 0.15s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
     }
-
     .btn:active { transform: scale(0.96); background: #00b8e0; }
-
     .btn-secondary {
       background: transparent;
       color: var(--accent);
@@ -156,13 +121,7 @@
     }
     .btn-secondary:active { background: rgba(0,212,255,0.1); }
 
-    /* ── TABS ───────────────────────────────────── */
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg2);
-    }
-
+    .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); }
     .tab {
       flex: 1;
       padding: 10px;
@@ -178,37 +137,23 @@
       border-bottom: 2px solid transparent;
       transition: color 0.15s, border-color 0.15s;
     }
-
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab.active   { color: var(--accent); border-bottom-color: var(--accent); }
     .tab:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    /* ── CONTENT ────────────────────────────────── */
     .content { padding: 14px 16px; max-width: 640px; margin: 0 auto; }
-
     .panel { display: none; }
     .panel.active { display: block; }
 
-    /* ── STATUS BAR ─────────────────────────────── */
     .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
       margin-bottom: 14px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-dim);
+      font-family: var(--mono); font-size: 11px; color: var(--text-dim);
     }
-
-    .dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--text-dim);
-    }
-    .dot.ok    { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
+    .dot.ok    { background: var(--green);  box-shadow: 0 0 6px var(--green); }
     .dot.warn  { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
-    .dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .dot.error { background: var(--red);    box-shadow: 0 0 6px var(--red); }
 
-    /* ── METAR CARD ─────────────────────────────── */
     .wx-card {
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -216,273 +161,125 @@
       overflow: hidden;
       margin-bottom: 14px;
     }
-
     .wx-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       background: rgba(0,212,255,0.04);
     }
-
-    .wx-card-title {
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-    }
-
-    .wx-card-age {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .wx-card-age.fresh  { color: var(--green); }
-    .wx-card-age.stale  { color: var(--yellow); }
-    .wx-card-age.old    { color: var(--red); }
+    .wx-card-title { font-family: var(--sans); font-weight: 700; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); }
+    .wx-card-age   { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+    .wx-card-age.fresh { color: var(--green); }
+    .wx-card-age.stale { color: var(--yellow); }
+    .wx-card-age.old   { color: var(--red); }
 
     .raw-metar {
       padding: 12px 14px;
-      font-family: var(--mono);
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--text);
-      word-break: break-all;
+      font-family: var(--mono); font-size: 13px; line-height: 1.7;
+      color: var(--text); word-break: break-all;
       border-bottom: 1px solid var(--border);
       background: var(--bg3);
     }
 
-    /* ── DECODED GRID ───────────────────────────── */
     .decoded-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1px; background: var(--border);
     }
-
-    .wx-item {
-      background: var(--bg2);
-      padding: 10px 14px;
-    }
-
-    .wx-label {
-      font-family: var(--sans);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 3px;
-    }
-
-    .wx-value {
-      font-family: var(--mono);
-      font-size: 18px;
-      color: var(--text);
-      line-height: 1.2;
-    }
-
+    .wx-item { background: var(--bg2); padding: 10px 14px; }
+    .wx-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+    .wx-value { font-family: var(--mono); font-size: 18px; color: var(--text); line-height: 1.2; }
     .wx-value.vfr  { color: var(--green); }
     .wx-value.mvfr { color: var(--accent); }
     .wx-value.ifr  { color: var(--red); }
     .wx-value.lifr { color: #cc44ff; }
+    .wx-value small { font-size: 11px; color: var(--text-dim); margin-left: 3px; }
 
-    .wx-value small {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-left: 3px;
-    }
-
-    /* ── FLIGHT CATEGORY BANNER ─────────────────── */
-    .flt-cat {
-      text-align: center;
-      padding: 8px;
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
+    .flt-cat { text-align: center; padding: 8px; font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
     .flt-cat.VFR  { background: rgba(57,255,122,0.15); color: var(--green); }
     .flt-cat.MVFR { background: rgba(0,212,255,0.15);  color: var(--accent); }
     .flt-cat.IFR  { background: rgba(255,68,68,0.15);  color: var(--red); }
     .flt-cat.LIFR { background: rgba(204,68,255,0.15); color: #cc44ff; }
 
-    /* ── ATIS CARD ──────────────────────────────── */
-    .atis-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-      margin-bottom: 14px;
+    /* TAF */
+    .taf-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 14px;
     }
+    .taf-raw {
+      padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.9;
+      color: var(--text); word-break: break-all; background: var(--bg3);
+    }
+    .taf-period {
+      border-top: 1px solid var(--border); padding: 8px 14px;
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline;
+    }
+    .taf-period:nth-child(even) { background: rgba(0,212,255,0.02); }
+    .taf-time { font-family: var(--mono); font-size: 11px; color: var(--accent); min-width: 90px; }
+    .taf-wx   { font-family: var(--mono); font-size: 12px; color: var(--text); flex: 1; }
+    .taf-cat  { font-family: var(--sans); font-weight: 700; font-size: 10px; letter-spacing: 1.5px; padding: 2px 6px; border-radius: 2px; }
+    .taf-cat.VFR  { background: rgba(57,255,122,0.2);  color: var(--green); }
+    .taf-cat.MVFR { background: rgba(0,212,255,0.2);   color: var(--accent); }
+    .taf-cat.IFR  { background: rgba(255,68,68,0.2);   color: var(--red); }
+    .taf-cat.LIFR { background: rgba(204,68,255,0.2);  color: #cc44ff; }
 
+    .atis-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
     .atis-header {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
       background: rgba(255,107,53,0.06);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
     }
-
-    .atis-info-code {
-      font-family: var(--mono);
-      font-size: 28px;
-      color: var(--accent2);
-      font-weight: bold;
-    }
-
-    .atis-body {
-      padding: 12px 14px;
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.9;
-      color: var(--text);
-    }
-
+    .atis-info-code { font-family: var(--mono); font-size: 28px; color: var(--accent2); }
+    .atis-body { padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.9; color: var(--text); }
     .atis-line { margin-bottom: 2px; }
-    .atis-key { color: var(--text-dim); margin-right: 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+    .atis-key  { color: var(--text-dim); margin-right: 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
 
-    /* ── EMPTY / ERROR STATE ────────────────────── */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-dim);
-    }
-
-    .empty-icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-      opacity: 0.4;
-    }
-
-    .empty-state h3 {
-      font-family: var(--sans);
-      font-weight: 600;
-      font-size: 16px;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-      color: var(--text-dim);
-    }
-
-    .empty-state p {
-      font-size: 13px;
-      line-height: 1.5;
-    }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+    .empty-icon  { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state h3 { font-family: var(--sans); font-weight: 600; font-size: 16px; letter-spacing: 1px; margin-bottom: 6px; color: var(--text-dim); }
+    .empty-state p  { font-size: 13px; line-height: 1.5; }
 
     .error-msg {
-      background: rgba(255,68,68,0.1);
-      border: 1px solid rgba(255,68,68,0.3);
-      border-radius: 4px;
-      padding: 12px 14px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--red);
-      margin-bottom: 12px;
+      background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3);
+      border-radius: 4px; padding: 12px 14px;
+      font-family: var(--mono); font-size: 12px; color: var(--red); margin-bottom: 12px;
     }
 
-    /* ── LOADING ────────────────────────────────── */
-    .loader {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 20px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-dim);
-    }
+    .loader { display: flex; align-items: center; gap: 10px; padding: 20px; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .spinner {
-      width: 18px; height: 18px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
-    }
-
-    /* ── HISTORY CHIPS ──────────────────────────── */
     .history-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 8px 16px 10px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      min-height: 38px;
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 8px 16px 10px; border-bottom: 1px solid var(--border);
+      background: var(--bg); min-height: 38px;
     }
-
     .hist-chip {
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: 1px;
-      color: var(--text-dim);
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 3px 9px;
-      cursor: pointer;
+      font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+      color: var(--text-dim); background: var(--bg3);
+      border: 1px solid var(--border); border-radius: 3px; padding: 3px 9px; cursor: pointer;
       transition: color 0.1s, border-color 0.1s;
     }
     .hist-chip:hover { color: var(--accent); border-color: var(--accent); }
 
-    /* ── REFRESH BTN ─────────────────────────────── */
-    .refresh-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
+    .refresh-row { display: flex; gap: 8px; margin-bottom: 14px; }
 
-    /* ── TOOLTIPS / REMARKS ─────────────────────── */
-    .remarks {
-      padding: 10px 14px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      line-height: 1.7;
-      border-top: 1px solid var(--border);
-    }
+    .remarks { padding: 10px 14px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.7; border-top: 1px solid var(--border); }
+    .remarks-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
 
-    .remarks-label {
-      font-family: var(--sans);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-bottom: 4px;
-    }
+    .no-atis { padding: 20px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
 
-    /* ── NO ATIS ─────────────────────────────────── */
-    .no-atis {
-      padding: 20px;
-      text-align: center;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    /* ── OFFLINE BANNER ──────────────────────────── */
     .offline-banner {
-      background: rgba(255,107,53,0.15);
-      border-bottom: 1px solid rgba(255,107,53,0.4);
-      padding: 7px 16px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--accent2);
-      text-align: center;
-      display: none;
+      background: rgba(255,107,53,0.15); border-bottom: 1px solid rgba(255,107,53,0.4);
+      padding: 7px 16px; font-family: var(--mono); font-size: 11px;
+      color: var(--accent2); text-align: center; display: none;
     }
     .offline-banner.show { display: block; }
+
+    .proxy-note {
+      background: rgba(255,211,61,0.08); border: 1px solid rgba(255,211,61,0.25);
+      border-radius: 4px; padding: 8px 12px;
+      font-family: var(--mono); font-size: 10px; color: var(--yellow);
+      margin-bottom: 12px; line-height: 1.6;
+    }
 
     @media (max-width: 380px) {
       .icao-input { font-size: 18px; }
@@ -524,12 +321,12 @@
 
 <div class="tabs">
   <button class="tab active" id="tabMetar" onclick="switchTab('metar')">METAR</button>
-  <button class="tab" id="tabAtis" onclick="switchTab('atis')" disabled>D-ATIS</button>
+  <button class="tab" id="tabTaf"   onclick="switchTab('taf')"  disabled>TAF</button>
+  <button class="tab" id="tabAtis"  onclick="switchTab('atis')" disabled>D-ATIS</button>
 </div>
 
 <div class="content">
 
-  <!-- METAR PANEL -->
   <div class="panel active" id="panelMetar">
     <div id="metarContent">
       <div class="empty-state">
@@ -540,7 +337,16 @@
     </div>
   </div>
 
-  <!-- ATIS PANEL -->
+  <div class="panel" id="panelTaf">
+    <div id="tafContent">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No TAF Loaded</h3>
+        <p>Fetch a METAR first</p>
+      </div>
+    </div>
+  </div>
+
   <div class="panel" id="panelAtis">
     <div id="atisContent">
       <div class="empty-state">
@@ -554,6 +360,36 @@
 </div>
 
 <script>
+// ─── CONFIG ──────────────────────────────────────────────────
+// PROXY OPTIONS (edit to match your deployment):
+//
+//   OPTION A — Self-hosted Cloudflare Worker (recommended for production)
+//              Deploy worker.js to Cloudflare Workers, set PROXY_BASE to your worker URL.
+//              e.g. 'https://pilotwx-proxy.YOUR-SUBDOMAIN.workers.dev'
+//
+//   OPTION B — corsproxy.io  (free, works on GitHub Pages / local dev)
+//              Set PROXY_BASE = '' to use the built-in corsproxy.io fallback.
+//
+const PROXY_BASE = 'https://pilotapp.aotfnat.workers.dev/';  // ← set to your Cloudflare Worker URL when deployed
+
+function metarUrl(icao) {
+  const target = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&hours=2`;
+  if (PROXY_BASE) return `${PROXY_BASE}/metar?ids=${icao}`;
+  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+}
+
+function tafUrl(icao) {
+  const target = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=json&time=valid`;
+  if (PROXY_BASE) return `${PROXY_BASE}/taf?ids=${icao}`;
+  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+}
+
+function atisUrl(icao) {
+  const target = `https://datis.clowd.io/api/${icao}`;
+  if (PROXY_BASE) return `${PROXY_BASE}/atis/${icao}`;
+  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+}
+
 // ─── UTC CLOCK ────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
@@ -574,14 +410,14 @@ window.addEventListener('offline', () => document.getElementById('offlineBanner'
 if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
 
 // ─── HISTORY ─────────────────────────────────────────────────
-let history = JSON.parse(localStorage.getItem('wxHistory') || '[]');
+let wxHistory = JSON.parse(localStorage.getItem('wxHistory') || '[]');
 let currentICAO = '';
 let atisAvailable = false;
 
 function renderHistory() {
   const row = document.getElementById('historyRow');
   row.innerHTML = '';
-  history.slice(0,8).forEach(icao => {
+  wxHistory.slice(0,8).forEach(icao => {
     const chip = document.createElement('button');
     chip.className = 'hist-chip';
     chip.textContent = icao;
@@ -594,8 +430,8 @@ function renderHistory() {
 }
 
 function addHistory(icao) {
-  history = [icao, ...history.filter(x => x !== icao)].slice(0,8);
-  localStorage.setItem('wxHistory', JSON.stringify(history));
+  wxHistory = [icao, ...wxHistory.filter(x => x !== icao)].slice(0,8);
+  localStorage.setItem('wxHistory', JSON.stringify(wxHistory));
   renderHistory();
 }
 
@@ -603,83 +439,70 @@ renderHistory();
 
 // ─── TABS ─────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.getElementById('panelMetar').classList.toggle('active', tab === 'metar');
-  document.getElementById('panelAtis').classList.toggle('active', tab === 'atis');
-  document.getElementById('tabMetar').classList.toggle('active', tab === 'metar');
-  document.getElementById('tabAtis').classList.toggle('active', tab === 'atis');
+  ['metar','taf','atis'].forEach(t => {
+    document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+  });
 }
 
 // ─── METAR PARSING ───────────────────────────────────────────
 function parseMetar(raw) {
   const out = { raw };
 
-  // Time
   const tMatch = raw.match(/\b(\d{2})(\d{2})(\d{2})Z\b/);
   if (tMatch) out.time = `${tMatch[1]}d ${tMatch[2]}:${tMatch[3]}Z`;
 
-  // Wind
   const wMatch = raw.match(/\b(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT\b/);
   if (wMatch) {
-    out.windDir = wMatch[1];
-    out.windSpd = wMatch[2];
-    out.windGust = wMatch[4] || null;
     const spd = parseInt(wMatch[2]);
     out.windStr = wMatch[1] === 'VRB'
-      ? `VRB ${spd}${wMatch[4] ? 'G' + wMatch[4] : ''}KT`
-      : `${wMatch[1]}° ${spd}${wMatch[4] ? 'G' + wMatch[4] : ''}KT`;
+      ? `VRB ${spd}${wMatch[4] ? 'G'+wMatch[4] : ''}KT`
+      : `${wMatch[1]}° ${spd}${wMatch[4] ? 'G'+wMatch[4] : ''}KT`;
   }
 
-  // Visibility
-  const vMatch = raw.match(/\b(\d+(?:\/\d+)?\s*SM)\b/) || raw.match(/\b(\d{4})\b(?!\s*Z)/);
+  const vMatch = raw.match(/\b(\d+(?:\/\d+)?\s*SM)\b/);
   if (vMatch) out.vis = vMatch[1];
 
-  // Ceiling & sky
   const skyParts = [];
   const skyRe = /\b(SKC|CLR|FEW|SCT|BKN|OVC)(\d{3})?(CB|TCU)?\b/g;
   let sm;
   while ((sm = skyRe.exec(raw)) !== null) {
     const cover = sm[1];
     const alt = sm[2] ? parseInt(sm[2]) * 100 : null;
-    const altStr = alt ? alt.toLocaleString() + 'ft' : '';
-    skyParts.push(`${cover}${altStr}${sm[3] || ''}`);
-    // Ceiling is first BKN or OVC
+    const altStr = alt ? alt.toLocaleString()+'ft' : '';
+    skyParts.push(`${cover}${altStr}${sm[3]||''}`);
     if (!out.ceiling && (cover === 'BKN' || cover === 'OVC') && alt) out.ceiling = alt;
   }
   out.sky = skyParts.join(' ') || 'CLR';
 
-  // Temp/Dewpoint
   const tdMatch = raw.match(/\b(M?\d{2})\/(M?\d{2})\b/);
   if (tdMatch) {
     out.temp = tdMatch[1].replace('M','-');
     out.dew  = tdMatch[2].replace('M','-');
   }
 
-  // Altimeter
   const aMatch = raw.match(/\bA(\d{4})\b/);
   if (aMatch) out.altim = (parseInt(aMatch[1]) / 100).toFixed(2) + ' inHg';
   const qMatch = raw.match(/\bQ(\d{4})\b/);
-  if (qMatch) out.altim = aMatch ? out.altim : parseInt(qMatch[1]) + ' hPa';
+  if (qMatch && !aMatch) out.altim = parseInt(qMatch[1]) + ' hPa';
 
-  // Weather phenomena
   const wxPhenomena = raw.match(/\b(-|\+|VC)?(TS|SH|FZ|DR|BL|MI|PR|BC|DZ|RA|SN|SG|IC|PL|GR|GS|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)+\b/g);
   if (wxPhenomena) out.wx = wxPhenomena.join(' ');
 
-  // Flight category
   const vis_sm = out.vis ? parseFloat(out.vis) : 10;
   const ceil = out.ceiling || 9999;
-  if (ceil < 500 || vis_sm < 1) out.flightCat = 'LIFR';
+  if      (ceil < 500  || vis_sm < 1) out.flightCat = 'LIFR';
   else if (ceil < 1000 || vis_sm < 3) out.flightCat = 'IFR';
   else if (ceil < 3000 || vis_sm < 5) out.flightCat = 'MVFR';
-  else out.flightCat = 'VFR';
+  else                                 out.flightCat = 'VFR';
 
-  // Remarks
   const rmkIdx = raw.indexOf(' RMK ');
   if (rmkIdx !== -1) out.remarks = raw.substring(rmkIdx + 5);
 
   return out;
 }
 
-function flightCatClass(cat) {
+function fcClass(cat) {
   return { VFR:'vfr', MVFR:'mvfr', IFR:'ifr', LIFR:'lifr' }[cat] || '';
 }
 
@@ -691,13 +514,14 @@ function metarAge(raw) {
   const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
   let diff = nowMin - obsMin;
   if (diff < 0) diff += 1440;
-  if (diff < 65) return { label: `${diff}m ago`, cls: 'fresh' };
+  if (diff < 65)  return { label: `${diff}m ago`, cls: 'fresh' };
   if (diff < 120) return { label: `${diff}m ago`, cls: 'stale' };
   return { label: `${diff}m ago`, cls: 'old' };
 }
 
 function renderMetar(data) {
-  const m = parseMetar(data.raw_text || data);
+  const raw = data.rawOb || data.raw_text || (typeof data === 'string' ? data : JSON.stringify(data));
+  const m = parseMetar(raw);
   const age = metarAge(m.raw);
   const cat = m.flightCat || 'VFR';
 
@@ -711,64 +535,92 @@ function renderMetar(data) {
       <div class="flt-cat ${cat}">${cat}</div>
       <div class="decoded-grid">`;
 
-  if (m.windStr) html += `
-    <div class="wx-item">
-      <div class="wx-label">Wind</div>
-      <div class="wx-value">${m.windStr}</div>
-    </div>`;
-
-  if (m.vis) html += `
-    <div class="wx-item">
-      <div class="wx-label">Visibility</div>
-      <div class="wx-value">${m.vis}</div>
-    </div>`;
-
-  html += `
-    <div class="wx-item">
-      <div class="wx-label">Sky</div>
-      <div class="wx-value" style="font-size:13px">${m.sky}</div>
-    </div>`;
-
-  if (m.ceiling) html += `
-    <div class="wx-item">
-      <div class="wx-label">Ceiling</div>
-      <div class="wx-value ${flightCatClass(cat)}">${m.ceiling.toLocaleString()}<small>ft</small></div>
-    </div>`;
-
-  if (m.temp) html += `
-    <div class="wx-item">
-      <div class="wx-label">Temp / Dew</div>
-      <div class="wx-value">${m.temp}° <small>/</small> ${m.dew}°<small>C</small></div>
-    </div>`;
-
-  if (m.altim) html += `
-    <div class="wx-item">
-      <div class="wx-label">Altimeter</div>
-      <div class="wx-value" style="font-size:15px">${m.altim}</div>
-    </div>`;
-
-  if (m.wx) html += `
-    <div class="wx-item" style="grid-column:1/-1">
-      <div class="wx-label">Weather</div>
-      <div class="wx-value" style="font-size:14px;color:var(--yellow)">${m.wx}</div>
-    </div>`;
+  if (m.windStr) html += `<div class="wx-item"><div class="wx-label">Wind</div><div class="wx-value">${m.windStr}</div></div>`;
+  if (m.vis)     html += `<div class="wx-item"><div class="wx-label">Visibility</div><div class="wx-value">${m.vis}</div></div>`;
+  html += `<div class="wx-item"><div class="wx-label">Sky</div><div class="wx-value" style="font-size:13px">${m.sky}</div></div>`;
+  if (m.ceiling) html += `<div class="wx-item"><div class="wx-label">Ceiling</div><div class="wx-value ${fcClass(cat)}">${m.ceiling.toLocaleString()}<small>ft</small></div></div>`;
+  if (m.temp)    html += `<div class="wx-item"><div class="wx-label">Temp / Dew</div><div class="wx-value">${m.temp}° <small>/</small> ${m.dew}°<small>C</small></div></div>`;
+  if (m.altim)   html += `<div class="wx-item"><div class="wx-label">Altimeter</div><div class="wx-value" style="font-size:15px">${m.altim}</div></div>`;
+  if (m.wx)      html += `<div class="wx-item" style="grid-column:1/-1"><div class="wx-label">Weather</div><div class="wx-value" style="font-size:14px;color:var(--yellow)">${m.wx}</div></div>`;
 
   html += `</div>`;
-
-  if (m.remarks) html += `
-    <div class="remarks">
-      <div class="remarks-label">Remarks</div>
-      ${m.remarks}
-    </div>`;
-
+  if (m.remarks) html += `<div class="remarks"><div class="remarks-label">Remarks</div>${m.remarks}</div>`;
   html += `</div>`;
-
-  // Refresh row
-  html += `<div class="refresh-row">
-    <button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button>
-  </div>`;
+  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
 
   document.getElementById('metarContent').innerHTML = html;
+}
+
+// ─── TAF PARSING ─────────────────────────────────────────────
+function parseTafPeriod(text) {
+  const vis_sm = (() => { const m = text.match(/\b(\d+(?:\/\d+)?)\s*SM\b/); return m ? parseFloat(m[1]) : 10; })();
+  let ceil = 9999;
+  const skyRe2 = /\b(BKN|OVC)(\d{3})\b/g;
+  let sm2;
+  while ((sm2 = skyRe2.exec(text)) !== null) {
+    const alt = parseInt(sm2[2]) * 100;
+    if (alt < ceil) ceil = alt;
+  }
+  if      (ceil < 500  || vis_sm < 1) return 'LIFR';
+  else if (ceil < 1000 || vis_sm < 3) return 'IFR';
+  else if (ceil < 3000 || vis_sm < 5) return 'MVFR';
+  else                                 return 'VFR';
+}
+
+function renderTaf(data) {
+  if (!data || !data.length) {
+    document.getElementById('tafContent').innerHTML = `<div class="no-atis"><div style="font-size:30px;margin-bottom:10px;opacity:0.3">📋</div><div>No TAF available for ${currentICAO}</div></div>`;
+    document.getElementById('tabTaf').disabled = true;
+    return;
+  }
+  document.getElementById('tabTaf').disabled = false;
+
+  const t = data[0];
+  const rawTaf = t.rawTAF || t.raw_text || '';
+
+  let html = `<div class="taf-card">
+    <div class="wx-card-header">
+      <span class="wx-card-title">TAF · ${currentICAO}</span>
+      <span class="wx-card-age fresh">Valid ${t.validTimeFrom || ''} → ${t.validTimeTo || ''}</span>
+    </div>
+    <div class="taf-raw">${rawTaf}</div>`;
+
+  // Parse forecast periods from raw TAF
+  if (rawTaf) {
+    const periods = rawTaf.split(/\b(FM\d{6}|BECMG|TEMPO|PROB\d{2})\b/).filter(Boolean);
+    const groups = [];
+    let current = null;
+    periods.forEach(p => {
+      if (/^(FM\d{6}|BECMG|TEMPO|PROB\d{2})$/.test(p.trim())) {
+        if (current) groups.push(current);
+        current = { type: p.trim(), text: '' };
+      } else if (current) {
+        current.text += p;
+      } else {
+        // Initial conditions
+        current = { type: 'INIT', text: p };
+      }
+    });
+    if (current) groups.push(current);
+
+    groups.forEach(g => {
+      const fc = parseTafPeriod(g.text);
+      let timeLabel = g.type;
+      if (/^FM(\d{2})(\d{2})(\d{2})$/.test(g.type)) {
+        const mm = g.type.match(/^FM(\d{2})(\d{2})(\d{2})$/);
+        timeLabel = `FM ${mm[1]}d ${mm[2]}:${mm[3]}Z`;
+      }
+      html += `<div class="taf-period">
+        <span class="taf-time">${timeLabel}</span>
+        <span class="taf-wx">${g.text.trim().replace(/\s+/g,' ')}</span>
+        <span class="taf-cat ${fc}">${fc}</span>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
+  document.getElementById('tafContent').innerHTML = html;
 }
 
 // ─── ATIS RENDER ─────────────────────────────────────────────
@@ -778,9 +630,7 @@ function renderAtis(atis) {
       <div class="no-atis">
         <div style="font-size:30px;margin-bottom:10px;opacity:0.3">📡</div>
         <div>No D-ATIS available for ${currentICAO}</div>
-        <div style="margin-top:6px;font-size:11px;color:var(--text-dim)">
-          D-ATIS is only available at select major airports
-        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-dim)">D-ATIS is only available at select major airports</div>
       </div>`;
     atisAvailable = false;
     document.getElementById('tabAtis').disabled = true;
@@ -795,94 +645,95 @@ function renderAtis(atis) {
     <div class="atis-header">
       <div>
         <div class="wx-card-title">D-ATIS · ${currentICAO}</div>
-        <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">${a.facility_type || 'ATIS'}</div>
+        <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">${a.facility_type || a.type || 'ATIS'}</div>
       </div>
-      <div class="atis-info-code">${a.information_code || '?'}</div>
+      <div class="atis-info-code">${a.information_code || a.info || '?'}</div>
     </div>
     <div class="atis-body">`;
 
-  const fields = [
-    ['Time',        a.time],
-    ['Wind',        a.wind],
-    ['Visibility',  a.visibility],
-    ['Sky',         a.sky_condition],
-    ['Temp/Dew',    a.temp_dewpoint],
-    ['Altimeter',   a.altimeter],
-    ['Runway',      a.runway_in_use],
-    ['Approaches',  a.approaches_in_use],
-    ['NOTAMs',      a.notams],
-    ['Remarks',     a.remarks],
-  ];
-
-  fields.forEach(([label, val]) => {
-    if (val) html += `<div class="atis-line"><span class="atis-key">${label}</span>${val}</div>`;
-  });
-
-  // Fallback: raw text
-  if (a.text) html += `<div style="margin-top:8px;line-height:1.8">${a.text}</div>`;
+  // datis.clowd.io returns { datis, airport, type }
+  if (a.datis) {
+    html += `<div style="line-height:1.9">${a.datis}</div>`;
+  } else {
+    const fields = [
+      ['Time', a.time], ['Wind', a.wind], ['Visibility', a.visibility],
+      ['Sky', a.sky_condition], ['Temp/Dew', a.temp_dewpoint],
+      ['Altimeter', a.altimeter], ['Runway', a.runway_in_use],
+      ['Approaches', a.approaches_in_use], ['NOTAMs', a.notams],
+      ['Remarks', a.remarks], ['Text', a.text],
+    ];
+    fields.forEach(([label, val]) => {
+      if (val) html += `<div class="atis-line"><span class="atis-key">${label}</span>${val}</div>`;
+    });
+  }
 
   html += `</div></div>`;
-  html += `<div class="refresh-row">
-    <button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button>
-  </div>`;
-
+  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
   document.getElementById('atisContent').innerHTML = html;
 }
 
 // ─── FETCH ────────────────────────────────────────────────────
+async function safeFetch(url, timeout = 12000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
 async function fetchWeather() {
   const raw = document.getElementById('icaoInput').value.trim().toUpperCase();
-  if (!raw || raw.length < 3) {
-    document.getElementById('icaoInput').focus();
-    return;
-  }
+  if (!raw || raw.length < 3) { document.getElementById('icaoInput').focus(); return; }
 
   currentICAO = raw;
   addHistory(raw);
 
-  // Loading state
-  document.getElementById('metarContent').innerHTML = `
-    <div class="loader"><div class="spinner"></div>Fetching METAR for ${raw}…</div>`;
-  document.getElementById('atisContent').innerHTML = `
-    <div class="loader"><div class="spinner"></div>Checking D-ATIS for ${raw}…</div>`;
+  document.getElementById('metarContent').innerHTML = `<div class="loader"><div class="spinner"></div>Fetching METAR for ${raw}…</div>`;
+  document.getElementById('tafContent').innerHTML   = `<div class="loader"><div class="spinner"></div>Fetching TAF for ${raw}…</div>`;
+  document.getElementById('atisContent').innerHTML  = `<div class="loader"><div class="spinner"></div>Checking D-ATIS for ${raw}…</div>`;
   document.getElementById('tabAtis').disabled = true;
-
+  document.getElementById('tabTaf').disabled  = true;
   switchTab('metar');
 
-  // ── METAR via aviationweather.gov (no key needed) ──
+  // ── METAR ──
   try {
-    const metarUrl = `https://aviationweather.gov/api/data/metar?ids=${raw}&format=json&hours=2`;
-    const resp = await fetch(metarUrl, { signal: AbortSignal.timeout(12000) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-
+    const data = await safeFetch(metarUrl(raw));
     if (!data || data.length === 0) {
-      document.getElementById('metarContent').innerHTML = `
-        <div class="error-msg">No METAR found for ${raw}. Verify the ICAO identifier.</div>
-        <div class="empty-state"><p>Check the identifier and try again.<br>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
+      document.getElementById('metarContent').innerHTML =
+        `<div class="error-msg">No METAR found for ${raw}. Verify the ICAO identifier.</div>
+         <div class="empty-state"><p>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
     } else {
       renderMetar(data[0]);
     }
-  } catch (e) {
-    document.getElementById('metarContent').innerHTML = `
-      <div class="error-msg">METAR fetch failed: ${e.message}</div>
-      <div class="empty-state"><p>Check your connection and try again.<br>Cached data may be shown if available.</p></div>`;
+  } catch(e) {
+    document.getElementById('metarContent').innerHTML =
+      `<div class="error-msg">METAR fetch failed: ${e.message}</div>
+       <div class="empty-state"><p>Check your connection and try again.</p></div>`;
   }
 
-  // ── D-ATIS via datis.info (free, no key) ──
+  // ── TAF ──
   try {
-    const atisUrl = `https://datis.clowd.io/api/${raw}`;
-    const resp = await fetch(atisUrl, { signal: AbortSignal.timeout(10000) });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
-    // API returns array of ATIS objects or error object
+    const data = await safeFetch(tafUrl(raw));
+    renderTaf(Array.isArray(data) ? data : []);
+  } catch(e) {
+    renderTaf([]);
+  }
+
+  // ── D-ATIS ──
+  try {
+    const data = await safeFetch(atisUrl(raw), 10000);
     if (Array.isArray(data) && data.length > 0) {
       renderAtis(data);
     } else {
       renderAtis([]);
     }
-  } catch (e) {
-    // Not all airports have D-ATIS — treat errors as unavailable
+  } catch(e) {
     renderAtis([]);
   }
 }
@@ -890,15 +741,12 @@ async function fetchWeather() {
 // ─── ENTER KEY ────────────────────────────────────────────────
 document.getElementById('icaoInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') fetchWeather();
-  // Force uppercase
-  setTimeout(() => {
-    e.target.value = e.target.value.toUpperCase();
-  }, 0);
+  setTimeout(() => { e.target.value = e.target.value.toUpperCase(); }, 0);
 });
 
 // ─── SERVICE WORKER ───────────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg failed:', err));
 }
 </script>
 </body>
