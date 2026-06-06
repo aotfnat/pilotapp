@@ -1,5 +1,10 @@
 const CACHE = 'pilotwx-v2';
-const SHELL = ['/index.html'];
+
+// Derive the correct path to index.html relative to wherever sw.js is deployed.
+// e.g. if sw.js is at https://example.com/pilotapp/sw.js,
+// SW_BASE will be 'https://example.com/pilotapp/' and SHELL will be that URL.
+const SW_BASE = self.location.href.replace(/sw\.js.*$/, '');
+const SHELL   = [SW_BASE + 'index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -47,7 +52,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // App shell: cache first
+  // App shell: cache first, fall back to index.html for navigation requests
   e.respondWith(
     caches.match(e.request)
       .then(cached => cached || fetch(e.request).then(resp => {
@@ -55,6 +60,6 @@ self.addEventListener('fetch', e => {
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return resp;
       }))
-      .catch(() => caches.match('/index.html'))
+      .catch(() => caches.match(SW_BASE + 'index.html'))
   );
 });
