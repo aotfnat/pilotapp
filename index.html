@@ -9,9 +9,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PilotWx" />
   <meta name="description" content="Pilot weather app for METAR and D-ATIS" />
-  <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
   <title>PilotWx</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -651,9 +651,23 @@ renderHistory();
 // ─── TABS ─────────────────────────────────────────────────────
 function switchTab(tab) {
   ['metar','taf','atis'].forEach(t => {
-    document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
-    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+    const panelId = 'panel' + t.charAt(0).toUpperCase() + t.slice(1);
+    const tabId   = 'tab'   + t.charAt(0).toUpperCase() + t.slice(1);
+    document.getElementById(panelId).classList.toggle('active', t === tab);
+    document.getElementById(tabId).classList.toggle('active', t === tab);
   });
+}
+
+// Reset all tabs to a clean state before each fetch — clears stale active/disabled
+// from a previous airport so the correct default tab is always shown.
+function resetTabs() {
+  ['metar','taf','atis'].forEach(t => {
+    const tabEl = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    tabEl.classList.remove('active');
+    tabEl.disabled = true;
+  });
+  // METAR tab is always enabled (we always attempt to fetch it)
+  document.getElementById('tabMetar').disabled = false;
 }
 
 // ─── METAR PARSING ───────────────────────────────────────────
@@ -970,16 +984,19 @@ async function fetchWeather() {
 
   const hasDatis = DATIS_AIRPORTS.has(raw);
 
+  // Reset all tabs to a clean disabled state, then switch to the correct default.
+  // This ensures a non-D-ATIS airport always shows METAR even if D-ATIS was
+  // the active tab from a previous search.
+  resetTabs();
+  switchTab(hasDatis ? 'atis' : 'metar');
+
   // Set loading states
   document.getElementById('metarContent').innerHTML = `<div class="loader"><div class="spinner"></div>Fetching METAR for ${raw}…</div>`;
   document.getElementById('tafContent').innerHTML   = `<div class="loader"><div class="spinner"></div>Fetching TAF for ${raw}…</div>`;
   document.getElementById('atisContent').innerHTML  = `<div class="loader"><div class="spinner"></div>${hasDatis ? 'Fetching' : 'Checking'} D-ATIS for ${raw}…</div>`;
-  document.getElementById('tabAtis').disabled = true;
-  document.getElementById('tabTaf').disabled  = true;
 
   if (hasDatis) {
-    // D-ATIS airport: fetch ATIS first, show that tab, then load METAR/TAF in background
-    switchTab('atis');
+    // D-ATIS airport: ATIS tab is already active from switchTab above
 
     // Fetch D-ATIS first
     try {
@@ -1005,9 +1022,7 @@ async function fetchWeather() {
     renderTaf(tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) ? tafResult.value : []);
 
   } else {
-    // Non-D-ATIS airport: show METAR tab, fetch all three concurrently
-    switchTab('metar');
-
+    // Non-D-ATIS airport: METAR tab already active from switchTab above, fetch all three concurrently
     const [metarResult, tafResult, atisResult] = await Promise.allSettled([
       safeFetch(metarUrl(raw)),
       safeFetch(tafUrl(raw)),
