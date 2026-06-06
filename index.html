@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PilotWx" />
   <meta name="description" content="Pilot weather app for METAR and D-ATIS" />
+  <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
   <title>PilotWx</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1099,8 +1100,7 @@ async function checkForUpdate() {
     const reg = await navigator.serviceWorker.getRegistration();
 
     if (!reg) {
-      showUpdateStatus('warn', 'No service worker registered yet.
-Try reloading the app first.');
+      showUpdateStatus('warn', 'No service worker registered yet. Try reloading the app first.');
       resetUpdateBtn();
       return;
     }
@@ -1110,8 +1110,7 @@ Try reloading the app first.');
 
     if (reg.installing) {
       // A new SW is being installed right now
-      showUpdateStatus('info', 'Update found! Installing…
-The app will reload automatically when ready.');
+      showUpdateStatus('info', 'Update found! Installing… The app will reload automatically when ready.');
       btnIcon.textContent  = '✓';
       btnLabel.textContent = 'Update Found';
       btn.className = 'btn-settings success';
@@ -1139,8 +1138,7 @@ The app will reload automatically when ready.');
 
     } else {
       // No update found
-      showUpdateStatus('success', 'You are up to date.
-No new version available.');
+      showUpdateStatus('success', 'You are up to date. No new version available.');
       btnIcon.textContent  = '✓';
       btnLabel.textContent = 'Up to Date';
       btn.className = 'btn-settings success';
