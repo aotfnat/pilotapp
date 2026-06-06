@@ -17,18 +17,22 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Allow the settings "Reload & Apply Update" button to trigger activation
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', e => {
-  // Only handle GET requests
   if (e.request.method !== 'GET') return;
 
   const url = new URL(e.request.url);
   const isApi = url.hostname.includes('corsproxy.io') ||
                 url.hostname.includes('aviationweather') ||
                 url.hostname.includes('datis') ||
-                (url.hostname.includes('workers.dev'));
+                url.hostname.includes('workers.dev');
 
   if (isApi) {
-    // Network first, fall back to cache — never let a fetch error crash the SW
+    // Network first, cache as fallback
     e.respondWith(
       fetch(e.request.clone())
         .then(resp => {
