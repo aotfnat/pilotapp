@@ -448,7 +448,30 @@
 
 <header>
   <div class="logo">
-    <span class="logo-mark" id="logoMark" onclick="openSettings()" title="Settings">✈ PILOTWX</span>
+    <span class="logo-mark" id="logoMark" onclick="openSettings()" title="Settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32" width="52" height="21" aria-label="Phenom 300" style="display:inline-block;vertical-align:middle;margin-right:5px;margin-bottom:2px">
+  <!-- Fuselage -->
+  <ellipse cx="40" cy="16" rx="30" ry="4.2" fill="currentColor"/>
+  <!-- Nose cone -->
+  <ellipse cx="10" cy="16" rx="5" ry="3.2" fill="currentColor"/>
+  <!-- Tail cone -->
+  <polygon points="70,16 78,13.5 78,18.5" fill="currentColor"/>
+  <!-- Main wings (swept) -->
+  <polygon points="32,15.5 52,15.5 62,5 58,5 44,14 32,14" fill="currentColor"/>
+  <polygon points="32,16.5 52,16.5 62,27 58,27 44,18 32,18" fill="currentColor"/>
+  <!-- Winglets -->
+  <polygon points="62,5 58,5 59,2 63,2" fill="currentColor"/>
+  <polygon points="62,27 58,27 59,30 63,30" fill="currentColor"/>
+  <!-- Horizontal stabilizer -->
+  <polygon points="67,15.5 75,15.5 78,10 75,10 71,14.5 67,14.5" fill="currentColor"/>
+  <polygon points="67,16.5 75,16.5 78,22 75,22 71,17.5 67,17.5" fill="currentColor"/>
+  <!-- Vertical stabilizer -->
+  <polygon points="69,16 69,12.5 75,8 75,12.5" fill="currentColor"/>
+  <!-- Engine nacelles (rear-mounted) -->
+  <ellipse cx="62" cy="13" rx="5" ry="2.2" fill="currentColor" opacity="0.85"/>
+  <ellipse cx="62" cy="19" rx="5" ry="2.2" fill="currentColor" opacity="0.85"/>
+  <!-- Cockpit windows -->
+  <ellipse cx="16" cy="14.5" rx="3.5" ry="1.8" fill="var(--bg2)" opacity="0.7"/>
+</svg> PILOTWX</span>
     <span class="logo-sub">Weather</span>
   </div>
   <div class="utc-clock">
@@ -549,50 +572,87 @@ function atisUrl(icao) {
 }
 
 // ─── D-ATIS AIRPORT LIST ─────────────────────────────────────
-// Airports with FAA Digital ATIS (D-ATIS). Source: FAA / datis.clowd.io
-// If an entered ICAO is in this set, D-ATIS is fetched first and shown by default.
+// Verified against atisrelay.com/airports (the same source as datis.clowd.io).
+// Only airports confirmed to have FAA Digital ATIS are included.
+// Last verified: June 2025.
 const DATIS_AIRPORTS = new Set([
-  // Northeast
-  'KBOS','KBDL','KPVD','KALB',
-  'KJFK','KLGA','KEWR','KTEB','KHPN',
-  'KPHL',
-  'KBWI','KDCA','KIAD',
-  // Southeast
-  'KATL','KCLT','KRDU','KGSO','KCHS',
-  'KMCO','KMIA','KFLL','KTPA','KPBI','KRSW',
-  'KJAX',
-  'KMEM','KBNA',
-  'KMSY',
-  // Midwest
-  'KORD','KMDW',
-  'KDTW',
-  'KMKE',
-  'KSTL','KMCI',
-  'KIND',
-  'KCMH','KCLE',
-  'KPIT',
-  'KOMA',
-  // South Central
-  'KDFW','KDAL','KAUS','KSAT','KHOU','KIAH','KELP',
-  'KOKC','KTUL',
-  'KLIT',
-  // Mountain / West
-  'KDEN',
-  'KPHX',
-  'KABQ',
-  'KSLC',
-  'KLAS','KRNO',
-  'KBOI',
-  // West Coast
-  'KSEA',
-  'KPDX',
-  'KSFO','KOAK','KSJC','KSMF','KBUR','KLAX','KSNA','KONT','KSAN',
-  // Hawaii / Alaska
-  'PHNL',
-  'PANC',
-  // Puerto Rico
-  'TJSJ',
+  'KALB', // Albany Intl
+  'KABQ', // Albuquerque Intl Sunport
+  'KAUS', // Austin-Bergstrom Intl
+  'KBWI', // Baltimore/Washington Intl
+  'KBDL', // Bradley Intl
+  'KBUF', // Buffalo Niagara Intl
+  'KBOS', // Boston Logan Intl
+  'KBOI', // Boise Air Terminal
+  'KBNA', // Nashville Intl
+  'KBUR', // Bob Hope (Burbank)
+  'KCHS', // Charleston AFB/Intl
+  'KCLT', // Charlotte/Douglas Intl
+  'KCLE', // Cleveland-Hopkins Intl
+  'KCMH', // John Glenn Columbus Intl
+  'KCVG', // Cincinnati/Northern Kentucky Intl
+  'KDAL', // Dallas Love Field
+  'KDCA', // Ronald Reagan Washington Natl
+  'KDEN', // Denver Intl
+  'KDFW', // Dallas-Fort Worth Intl
+  'KDTW', // Detroit Metro Wayne County
+  'KELP', // El Paso Intl
+  'KEWR', // Newark Liberty Intl
+  'KFLL', // Fort Lauderdale/Hollywood Intl
+  'KGSO', // Piedmont Triad Intl
+  'KHOU', // William P Hobby
+  'KHPN', // Westchester County
+  'KIAD', // Washington Dulles Intl
+  'KIAH', // George Bush Intercontinental
+  'KIND', // Indianapolis Intl
+  'KJAX', // Jacksonville Intl
+  'KJFK', // John F Kennedy Intl
+  'KADW', // Joint Base Andrews
+  'KLAS', // Harry Reid Intl (Las Vegas)
+  'KLAX', // Los Angeles Intl
+  'KLGA', // LaGuardia
+  'KLIT', // Bill and Hillary Clinton Natl
+  'KMCI', // Kansas City Intl
+  'KMCO', // Orlando Intl
+  'KMDW', // Chicago Midway Intl
+  'KMEM', // Memphis Intl
+  'KMIA', // Miami Intl
+  'KMKE', // General Mitchell Intl (Milwaukee)
+  'KMSP', // Minneapolis-St Paul Intl
+  'KMSY', // Louis Armstrong New Orleans Intl
+  'KOAK', // Metro Oakland Intl
+  'KOKC', // Will Rogers World
+  'KOMA', // Eppley Airfield (Omaha)
+  'KONT', // Ontario Intl
+  'KORD', // Chicago O'Hare Intl
+  'KPBI', // Palm Beach Intl
+  'KPHL', // Philadelphia Intl
+  'KPHX', // Phoenix Sky Harbor Intl
+  'KPIT', // Pittsburgh Intl
+  'KPDX', // Portland Intl
+  'KPVD', // Rhode Island TF Green Intl
+  'KRDU', // Raleigh-Durham Intl
+  'KRNO', // Reno/Tahoe Intl
+  'KRSW', // Southwest Florida Intl
+  'KSAN', // San Diego Intl
+  'KSAT', // San Antonio Intl
+  'KSDF', // Louisville Muhammad Ali Intl
+  'KSEA', // Seattle-Tacoma Intl
+  'KSFO', // San Francisco Intl
+  'KSJC', // Norman Y Mineta San Jose Intl
+  'KSLC', // Salt Lake City Intl
+  'KSMF', // Sacramento Intl
+  'KSNA', // John Wayne/Orange County
+  'KSTL', // St Louis Lambert Intl
+  'KTEB', // Teterboro
+  'KTPA', // Tampa Intl
+  'KTUL', // Tulsa Intl
+  'KVNY', // Van Nuys
+  'PANC', // Ted Stevens Anchorage Intl
+  'PHNL', // Daniel K Inouye Intl (Honolulu)
+  'TJSJ', // Luis Munoz Marin Intl (San Juan)
 ]);
+
 
 // ─── UTC CLOCK ────────────────────────────────────────────────
 function updateClock() {
