@@ -561,7 +561,7 @@
 //   OPTION B — corsproxy.io  (free, works on GitHub Pages / local dev)
 //              Set PROXY_BASE = '' to use the built-in corsproxy.io fallback.
 //
-const PROXY_BASE = '';  // ← set to your Cloudflare Worker URL when deployed (trailing slash optional)
+const PROXY_BASE = 'https://pilotapp.aotfnat.workers.dev';  // ← set to your Cloudflare Worker URL when deployed (trailing slash optional)
 
 // Normalize: strip any trailing slash so URLs never get a double-slash
 const _BASE = PROXY_BASE.replace(/\/+$/, '');
