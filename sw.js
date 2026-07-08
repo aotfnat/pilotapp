@@ -1,4 +1,4 @@
-const CACHE = 'pilotwx-v2.10';
+const CACHE = 'pilotwx-v0.07';
 
 // Derive the correct path to index.html relative to wherever sw.js is deployed.
 // e.g. if sw.js is at https://example.com/pilotapp/sw.js,

@@ -486,7 +486,6 @@
                   17.69,12.22 16.45,7.69 15.12,1.99 Z" fill="currentColor"/>
       </svg>
       PILOTWX</span>
-    <span class="logo-sub">Weather</span>
   </div>
   <div class="utc-clock">
     <div class="utc-time" id="utcTime">--:--:--</div>
@@ -577,6 +576,46 @@ function tafUrl(icao) {
   const target = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=json&time=valid`;
   if (_BASE) return `${_BASE}/taf?ids=${icao}`;
   return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+}
+
+function tafRadiusUrl(lat, lon, radiusNm) {
+  // Search for TAFs within radiusNm nautical miles of lat/lon.
+  // aviationweather.gov accepts &bbox or &radial; radial format is:
+  //   &radial=lon,lat,radiusNm (yes, lon first)
+  const target = `https://aviationweather.gov/api/data/taf?format=json&time=valid&radial=${lon},${lat},${radiusNm}`;
+  if (_BASE) return `${_BASE}/taf-radius?lat=${lat}&lon=${lon}&radius=${radiusNm}`;
+  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+}
+
+// Fetch TAF for icao; if none found and metar data has coordinates,
+// fall back to nearest TAF within 75nm. Returns { tafData, nearestIcao }.
+async function fetchTafWithFallback(icao, metarData) {
+  // Primary: try the exact ICAO
+  try {
+    const data = await safeFetch(tafUrl(icao));
+    if (Array.isArray(data) && data.length > 0) {
+      return { tafData: data, nearestIcao: null };
+    }
+  } catch(e) { /* fall through */ }
+
+  // Fallback: radial search using METAR coordinates
+  const lat = metarData && (metarData.latitude  || metarData.lat);
+  const lon = metarData && (metarData.longitude || metarData.lon);
+  if (!lat || !lon) return { tafData: [], nearestIcao: null };
+
+  try {
+    const data = await safeFetch(tafRadiusUrl(lat, lon, 75));
+    if (Array.isArray(data) && data.length > 0) {
+      // Sort by distance — API returns closest first, but confirm with stationId
+      const nearest = data[0];
+      const nearestIcao = nearest.stationId || nearest.icaoId || nearest.station_id || null;
+      // Don't report as "nearest" if it's the same airport
+      const isDifferent = nearestIcao && nearestIcao.toUpperCase() !== icao.toUpperCase();
+      return { tafData: data, nearestIcao: isDifferent ? nearestIcao : null };
+    }
+  } catch(e) { /* fall through */ }
+
+  return { tafData: [], nearestIcao: null };
 }
 
 function atisUrl(icao) {
@@ -859,9 +898,9 @@ function parseTafPeriod(text) {
   else                                 return 'VFR';
 }
 
-function renderTaf(data) {
+function renderTaf(data, nearestIcao) {
   if (!data || !data.length) {
-    document.getElementById('tafContent').innerHTML = `<div class="no-atis"><div style="font-size:30px;margin-bottom:10px;opacity:0.3">📋</div><div>No TAF available for ${currentICAO}</div></div>`;
+    document.getElementById('tafContent').innerHTML = `<div class="no-atis"><div style="font-size:30px;margin-bottom:10px;opacity:0.3">📋</div><div>No TAF available within 75nm of ${currentICAO}</div></div>`;
     document.getElementById('tabTaf').disabled = true;
     return;
   }
@@ -869,12 +908,21 @@ function renderTaf(data) {
 
   const t = data[0];
   const rawTaf = t.rawTAF || t.raw_text || '';
+  const displayIcao = nearestIcao || currentICAO;
+
+  // Banner shown when TAF is from a different airport
+  const nearestBanner = nearestIcao
+    ? `<div style="background:rgba(255,211,61,0.1);border-bottom:1px solid rgba(255,211,61,0.25);padding:7px 14px;font-family:var(--mono);font-size:11px;color:var(--yellow)">
+        ⚠ No TAF for ${currentICAO} — showing nearest: ${nearestIcao}
+       </div>`
+    : '';
 
   let html = `<div class="taf-card">
     <div class="wx-card-header">
-      <span class="wx-card-title">TAF · ${currentICAO}</span>
+      <span class="wx-card-title">TAF · ${displayIcao}${nearestIcao ? ' <span style="font-size:9px;color:var(--yellow);letter-spacing:1px">NEAREST</span>' : ''}</span>
       <span class="wx-card-age fresh">Valid ${t.validTimeFrom || ''} → ${t.validTimeTo || ''}</span>
     </div>
+    ${nearestBanner}
     <div class="taf-raw">${rawTaf}</div>`;
 
   // Parse forecast periods from raw TAF
@@ -1073,20 +1121,31 @@ async function fetchWeather() {
       renderAtis([]);
     }
 
-    // Then METAR + TAF concurrently
+    // Then METAR + TAF concurrently (TAF uses fallback to nearest airport)
     const [metarResult, tafResult] = await Promise.allSettled([
       safeFetch(metarUrl(raw)),
-      safeFetch(tafUrl(raw)),
+      safeFetch(tafUrl(raw)),   // primary TAF attempt runs concurrently with METAR
     ]);
 
-    if (metarResult.status === 'fulfilled' && metarResult.value?.length) {
-      renderMetar(metarResult.value[0]);
+    const metarData = metarResult.status === 'fulfilled' && metarResult.value?.length
+      ? metarResult.value[0] : null;
+
+    if (metarData) {
+      renderMetar(metarData);
     } else {
       document.getElementById('metarContent').innerHTML =
         `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
          <div class="empty-state"><p>Check your connection and try again.</p></div>`;
     }
-    renderTaf(tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) ? tafResult.value : []);
+
+    // If primary TAF succeeded use it; otherwise try radial fallback
+    if (tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) && tafResult.value.length > 0) {
+      renderTaf(tafResult.value, null);
+    } else {
+      document.getElementById('tafContent').innerHTML = `<div class="loader"><div class="spinner"></div>Searching nearby airports for TAF…</div>`;
+      const { tafData, nearestIcao } = await fetchTafWithFallback(raw, metarData);
+      renderTaf(tafData, nearestIcao);
+    }
 
   } else {
     // Non-D-ATIS airport: METAR tab already active from switchTab above, fetch all three concurrently
@@ -1096,14 +1155,26 @@ async function fetchWeather() {
       safeFetch(atisUrl(raw), 10000),
     ]);
 
-    if (metarResult.status === 'fulfilled' && metarResult.value?.length) {
-      renderMetar(metarResult.value[0]);
+    const metarData = metarResult.status === 'fulfilled' && metarResult.value?.length
+      ? metarResult.value[0] : null;
+
+    if (metarData) {
+      renderMetar(metarData);
     } else {
       document.getElementById('metarContent').innerHTML =
         `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
          <div class="empty-state"><p>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
     }
-    renderTaf(tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) ? tafResult.value : []);
+
+    // If primary TAF succeeded use it; otherwise try radial fallback using METAR coords
+    if (tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) && tafResult.value.length > 0) {
+      renderTaf(tafResult.value, null);
+    } else {
+      document.getElementById('tafContent').innerHTML = `<div class="loader"><div class="spinner"></div>Searching nearby airports for TAF…</div>`;
+      const { tafData, nearestIcao } = await fetchTafWithFallback(raw, metarData);
+      renderTaf(tafData, nearestIcao);
+    }
+
     renderAtis(atisResult.status === 'fulfilled' && Array.isArray(atisResult.value) && atisResult.value.length > 0
       ? atisResult.value : []);
   }

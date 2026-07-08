@@ -40,6 +40,11 @@ export default {
     } else if (path === '/taf') {
       const ids = url.searchParams.get('ids') || '';
       upstream = `${AWC_BASE}/taf?ids=${ids}&format=json&time=valid`;
+    } else if (path === '/taf-radius') {
+      const lat    = url.searchParams.get('lat')    || '';
+      const lon    = url.searchParams.get('lon')    || '';
+      const radius = url.searchParams.get('radius') || '75';
+      upstream = `${AWC_BASE}/taf?format=json&time=valid&radial=${lon},${lat},${radius}`;
     } else if (path.startsWith('/atis/')) {
       const icao = path.replace('/atis/', '').toUpperCase();
       upstream = `${ATIS_BASE}/${icao}`;
