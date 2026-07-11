@@ -1,1359 +1,253 @@
+<!-- index.html Workout App -->
+<!-- Version 9.5, SOC: added Sound Reset button to workout side drawer-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0e14" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="PilotWx" />
-  <meta name="description" content="Pilot weather app for METAR and D-ATIS" />
-  <title>PilotWx</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg:        #0a0e14;
-      --bg2:       #111720;
-      --bg3:       #1a2233;
-      --border:    #1e2d42;
-      --accent:    #00d4ff;
-      --accent2:   #ff6b35;
-      --green:     #39ff7a;
-      --yellow:    #ffd93d;
-      --red:       #ff4444;
-      --text:      #c8d8e8;
-      --text-dim:  #5a7a9a;
-      --mono:      'Share Tech Mono', monospace;
-      --sans:      'Barlow Condensed', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Fitness App PWA</title>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4CAF50">
 
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px 10px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg2);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo { display: flex; align-items: baseline; gap: 6px; }
-    .logo-mark { font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: -1px; }
-    .logo-sub  { font-family: var(--sans); font-weight: 300; font-size: 11px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; }
-
-    .utc-clock { font-family: var(--mono); font-size: 13px; color: var(--text-dim); text-align: right; line-height: 1.4; }
-    .utc-time  { color: var(--accent); font-size: 16px; }
-
-    .search-bar {
-      padding: 14px 16px;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .icao-input {
-      flex: 1;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--accent);
-      font-family: var(--mono);
-      font-size: 22px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      padding: 10px 14px;
-      outline: none;
-      transition: border-color 0.15s;
-      min-width: 0;
-    }
-    .icao-input::placeholder { color: var(--text-dim); letter-spacing: 2px; font-size: 16px; }
-    .icao-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,212,255,0.12); }
-
-    .btn {
-      background: var(--accent);
-      color: var(--bg);
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      border: none;
-      border-radius: 4px;
-      padding: 12px 18px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s, transform 0.1s;
-    }
-    .btn:active { transform: scale(0.96); background: #00b8e0; }
-    .btn-secondary {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-    .btn-secondary:active { background: rgba(0,212,255,0.1); }
-
-    .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); }
-    .tab {
-      flex: 1;
-      padding: 10px;
-      font-family: var(--sans);
-      font-weight: 600;
-      font-size: 13px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      background: none;
-      border: none;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .tab.active   { color: var(--accent); border-bottom-color: var(--accent); }
-    .tab:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    .content { padding: 14px 16px; max-width: 640px; margin: 0 auto; }
-    .panel { display: none; }
-    .panel.active { display: block; }
-
-    .status-bar {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 14px;
-      font-family: var(--mono); font-size: 11px; color: var(--text-dim);
-    }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
-    .dot.ok    { background: var(--green);  box-shadow: 0 0 6px var(--green); }
-    .dot.warn  { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
-    .dot.error { background: var(--red);    box-shadow: 0 0 6px var(--red); }
-
-    .wx-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      overflow: hidden;
-      margin-bottom: 14px;
-    }
-    .wx-card-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(0,212,255,0.04);
-    }
-    .wx-card-title { font-family: var(--sans); font-weight: 700; font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); }
-    .wx-card-age   { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
-    .wx-card-age.fresh { color: var(--green); }
-    .wx-card-age.stale { color: var(--yellow); }
-    .wx-card-age.old   { color: var(--red); }
-
-    .raw-metar {
-      padding: 12px 14px;
-      font-family: var(--mono); font-size: 13px; line-height: 1.7;
-      color: var(--text); word-break: break-all;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg3);
-    }
-
-    .decoded-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 1px; background: var(--border);
-    }
-    .wx-item { background: var(--bg2); padding: 10px 14px; }
-    .wx-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
-    .wx-value { font-family: var(--mono); font-size: 18px; color: var(--text); line-height: 1.2; }
-    .wx-value.vfr  { color: var(--green); }
-    .wx-value.mvfr { color: var(--accent); }
-    .wx-value.ifr  { color: var(--red); }
-    .wx-value.lifr { color: #cc44ff; }
-    .wx-value small { font-size: 11px; color: var(--text-dim); margin-left: 3px; }
-
-    .flt-cat { text-align: center; padding: 8px; font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
-    .flt-cat.VFR  { background: rgba(57,255,122,0.15); color: var(--green); }
-    .flt-cat.MVFR { background: rgba(0,212,255,0.15);  color: var(--accent); }
-    .flt-cat.IFR  { background: rgba(255,68,68,0.15);  color: var(--red); }
-    .flt-cat.LIFR { background: rgba(204,68,255,0.15); color: #cc44ff; }
-
-    /* TAF */
-    .taf-card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 14px;
-    }
-    .taf-raw {
-      padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.9;
-      color: var(--text); word-break: break-all; background: var(--bg3);
-    }
-    .taf-period {
-      border-top: 1px solid var(--border); padding: 8px 14px;
-      display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline;
-    }
-    .taf-period:nth-child(even) { background: rgba(0,212,255,0.02); }
-    .taf-time { font-family: var(--mono); font-size: 11px; color: var(--accent); min-width: 90px; }
-    .taf-wx   { font-family: var(--mono); font-size: 12px; color: var(--text); flex: 1; }
-    .taf-cat  { font-family: var(--sans); font-weight: 700; font-size: 10px; letter-spacing: 1.5px; padding: 2px 6px; border-radius: 2px; }
-    .taf-cat.VFR  { background: rgba(57,255,122,0.2);  color: var(--green); }
-    .taf-cat.MVFR { background: rgba(0,212,255,0.2);   color: var(--accent); }
-    .taf-cat.IFR  { background: rgba(255,68,68,0.2);   color: var(--red); }
-    .taf-cat.LIFR { background: rgba(204,68,255,0.2);  color: #cc44ff; }
-
-    .atis-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
-    .atis-header {
-      padding: 10px 14px; border-bottom: 1px solid var(--border);
-      background: rgba(255,107,53,0.06);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .atis-info-code { font-family: var(--mono); font-size: 28px; color: var(--accent2); }
-    .atis-body { padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.9; color: var(--text); }
-    .atis-line { margin-bottom: 2px; }
-    .atis-key  { color: var(--text-dim); margin-right: 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
-
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
-    .empty-icon  { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-    .empty-state h3 { font-family: var(--sans); font-weight: 600; font-size: 16px; letter-spacing: 1px; margin-bottom: 6px; color: var(--text-dim); }
-    .empty-state p  { font-size: 13px; line-height: 1.5; }
-
-    .error-msg {
-      background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.3);
-      border-radius: 4px; padding: 12px 14px;
-      font-family: var(--mono); font-size: 12px; color: var(--red); margin-bottom: 12px;
-    }
-
-    .loader { display: flex; align-items: center; gap: 10px; padding: 20px; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
-
-    .history-row {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      padding: 8px 16px 10px; border-bottom: 1px solid var(--border);
-      background: var(--bg); min-height: 38px;
-    }
-    .hist-chip {
-      font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
-      color: var(--text-dim); background: var(--bg3);
-      border: 1px solid var(--border); border-radius: 3px; padding: 3px 9px; cursor: pointer;
-      transition: color 0.1s, border-color 0.1s;
-    }
-    .hist-chip:hover { color: var(--accent); border-color: var(--accent); }
-
-    .refresh-row { display: flex; gap: 8px; margin-bottom: 14px; }
-
-    .remarks { padding: 10px 14px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); line-height: 1.7; border-top: 1px solid var(--border); }
-    .remarks-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
-
-    .no-atis { padding: 20px; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
-
-    .offline-banner {
-      background: rgba(255,107,53,0.15); border-bottom: 1px solid rgba(255,107,53,0.4);
-      padding: 7px 16px; font-family: var(--mono); font-size: 11px;
-      color: var(--accent2); text-align: center; display: none;
-    }
-    .offline-banner.show { display: block; }
-
-    .proxy-note {
-      background: rgba(255,211,61,0.08); border: 1px solid rgba(255,211,61,0.25);
-      border-radius: 4px; padding: 8px 12px;
-      font-family: var(--mono); font-size: 10px; color: var(--yellow);
-      margin-bottom: 12px; line-height: 1.6;
-    }
-
-    @media (max-width: 380px) {
-      .icao-input { font-size: 18px; }
-      .wx-value { font-size: 15px; }
-    }
-
-    /* ── SETTINGS DRAWER ─────────────────────────────────────── */
-    .logo-mark {
-      cursor: pointer;
-      user-select: none;
-      border-radius: 4px;
-      padding: 2px 4px;
-      margin: -2px -4px;
-      transition: background 0.15s;
-    }
-    .logo-mark:active { background: rgba(0,212,255,0.15); }
-
-    .settings-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 500;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    .settings-overlay.open { opacity: 1; pointer-events: all; }
-
-    .settings-drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: min(300px, 85vw);
-      height: 100vh;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      z-index: 501;
-      transform: translateX(-100%);
-      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-      display: flex; flex-direction: column;
-    }
-    .settings-drawer.open { transform: translateX(0); }
-
-    .settings-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(0,212,255,0.04);
-    }
-    .settings-title {
-      font-family: var(--sans); font-weight: 700; font-size: 13px;
-      letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim);
-    }
-    .settings-close {
-      background: none; border: none; color: var(--text-dim);
-      font-size: 20px; cursor: pointer; padding: 2px 6px;
-      border-radius: 3px; line-height: 1;
-      transition: color 0.15s, background 0.15s;
-    }
-    .settings-close:hover { color: var(--text); background: var(--bg3); }
-
-    .settings-body {
-      flex: 1; padding: 16px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-
-    .settings-section-label {
-      font-family: var(--sans); font-size: 10px; font-weight: 600;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim);
-      margin: 8px 0 4px;
-    }
-    .settings-section-label:first-child { margin-top: 0; }
-
-    .settings-info-row {
-      display: flex; align-items: flex-start; gap: 12px;
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 5px; padding: 12px 14px;
-    }
-    .settings-info-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
-    .settings-info-title { font-family: var(--sans); font-weight: 600; font-size: 14px; color: var(--text); line-height: 1.2; }
-    .settings-info-desc  { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
-
-    .btn-settings {
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 5px; color: var(--accent);
-      font-family: var(--sans); font-weight: 700; font-size: 12px;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      cursor: pointer; padding: 12px 14px; width: 100%;
-      text-align: left; display: flex; align-items: center; gap: 10px;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .btn-settings:hover  { background: var(--bg); border-color: var(--accent); }
-    .btn-settings:active { transform: scale(0.98); }
-    .btn-settings.success { border-color: var(--green); color: var(--green); }
-    .btn-settings.error   { border-color: var(--red);   color: var(--red); }
-    .btn-settings:disabled { opacity: 0.6; cursor: wait; }
-
-    .update-status {
-      font-family: var(--mono); font-size: 11px;
-      padding: 8px 12px; border-radius: 4px; line-height: 1.5; display: none;
-    }
-    .update-status.show    { display: block; }
-    .update-status.info    { background: rgba(0,212,255,0.08);  color: var(--accent);  border: 1px solid rgba(0,212,255,0.2); }
-    .update-status.success { background: rgba(57,255,122,0.08); color: var(--green);   border: 1px solid rgba(57,255,122,0.2); }
-    .update-status.warn    { background: rgba(255,211,61,0.08); color: var(--yellow);  border: 1px solid rgba(255,211,61,0.2); }
-
-    .settings-footer {
-      padding: 14px 16px; border-top: 1px solid var(--border);
-      font-family: var(--mono); font-size: 10px; color: var(--text-dim); line-height: 1.6;
-    }
-  </style>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fitness App">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
 </head>
 <body>
+<div id="app">
+    <main class="content-area">
+        <!-- CALENDAR -->
+        <div id="calendar-section" class="tab-content active">
+            <h2><button class="section-menu-btn" onclick="toggleMenu()">☰</button> 📅 Calendar</h2>
+            <div id="calendar-view"></div>
+            <div class="update-row">
+                <button class="update-btn" onclick="checkForUpdate()">🔄 Check for App Update</button>
+                <span id="update-status" class="update-status"></span>
+            </div>
+            <p id="app-version-label" class="app-version-label"></p>
+        </div>
 
-<div class="offline-banner" id="offlineBanner">⚠ OFFLINE — Showing cached data</div>
+        <!-- PLAN -->
+        <div id="plan-section" class="tab-content">
+            <h2><button class="section-menu-btn" onclick="toggleMenu()">☰</button> 📋 Plan</h2>
+            <div id="weekly-plan"></div>
+            <button onclick="addWorkout()">＋ Add Workout</button>
+            <button onclick="savePlanWithAlert()">💾 Save Plan</button>
+            <div class="backup-row">
+                <button class="backup-btn export-btn" onclick="exportPlanCSV()">📤 Export to CSV</button>
+                <button class="backup-btn import-btn" onclick="document.getElementById('csv-import-input').click()">📥 Import CSV</button>
+            </div>
+            <input type="file" id="csv-import-input" accept=".csv" style="display:none" onchange="importPlanCSV(event)">
+        </div>
 
-<!-- Settings overlay + drawer -->
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
-<div class="settings-drawer" id="settingsDrawer">
-  <div class="settings-header">
-    <span class="settings-title">Settings</span>
-    <button class="settings-close" onclick="closeSettings()" aria-label="Close">✕</button>
-  </div>
-  <div class="settings-body">
+        <!-- WORKOUT -->
+        <div id="workout-section" class="tab-content">
 
-    <div class="settings-section-label">App</div>
+            <!-- Sticky HUD -->
+            <div id="workout-hud">
+                <!-- Left cell: menu + elapsed + phase label + work total -->
+                <div class="hud-cell">
+                    <div class="hud-label">
+                        <button id="menu-btn" onclick="toggleMenu()" aria-label="Open menu">☰</button>
+                        <span>⏱ Elapsed</span>
+                    </div>
+                    <div class="hud-elapsed-row">
+                        <div id="lapsed-time" class="hud-time">00:00</div>
+                        <div class="hud-elapsed-meta">
+                            <div id="hud-workout-phase" class="hud-phase-label"></div>
+                            <div id="hud-work-total" class="hud-work-label"></div>
+                        </div>
+                    </div>
+                </div>
 
-    <button class="btn-settings" id="updateBtn" onclick="checkForUpdate()">
-      <span id="updateBtnIcon">↻</span>
-      <span id="updateBtnLabel">Check for Updates</span>
-    </button>
-    <div class="update-status" id="updateStatus"></div>
+                <!-- Right cell: Pause/Resume + Skip Rest (top-left) + phase label + timer -->
+                <div class="hud-cell hud-right" onclick="openTimerDrawer()" style="cursor:pointer;">
+                    <div class="hud-timer-top-row">
+                        <button id="pause-resume-btn" class="pause-resume-btn"
+                            onclick="event.stopPropagation(); pauseResumeTimer()"
+                            style="display:none;">⏸</button>
+                        <button id="skip-rest-btn" class="pause-resume-btn skip-rest-btn"
+                            onclick="event.stopPropagation(); skipToEndOfRest()"
+                            style="display:none;" title="Skip to end of rest">⏭</button>
+                        <div id="timer-phase-label" class="hud-label">⏱ Timer</div>
+                    </div>
+                    <div id="timer" class="hud-time">--:--</div>
+                </div>
+            </div>
 
-    <div class="settings-section-label">Data Sources</div>
+            <!-- Current exercise -->
+            <div id="exercise-list"></div>
 
-    <div class="settings-info-row">
-      <div class="settings-info-icon">📡</div>
-      <div>
-        <div class="settings-info-title">METAR &amp; TAF</div>
-        <div class="settings-info-desc">aviationweather.gov<br>FAA Aviation Weather Center</div>
-      </div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div id="progress-section" class="tab-content">
+            <h2><button class="section-menu-btn" onclick="toggleMenu()">☰</button> 📈 Progress</h2>
+            <div class="backup-row">
+                <button class="backup-btn export-btn" onclick="exportProgressCSV()">📤 Export to CSV</button>
+                <button class="backup-btn import-btn" onclick="document.getElementById('progress-import-input').click()">📥 Import CSV</button>
+            </div>
+            <input type="file" id="progress-import-input" accept=".csv" style="display:none" onchange="importProgressCSV(event)">
+            <!-- Two stacked Work/Power charts -->
+            <div id="progress-charts-container"></div>
+            <!-- Session log -->
+            <div id="progress-log"></div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings-section" class="tab-content">
+            <h2><button class="section-menu-btn" onclick="toggleMenu()">☰</button> ⚙️ Settings</h2>
+            <div class="settings-form">
+                <label>Body Weight
+                    <div class="settings-input-row">
+                        <input type="number" id="user-weight" min="0" step="0.1" placeholder="e.g. 180">
+                        <span class="settings-unit-label" id="weight-unit-label">lb</span>
+                    </div>
+                </label>
+                <label>Height
+                    <div class="settings-input-row">
+                        <input type="number" id="user-height" min="0" step="0.1" placeholder="e.g. 70">
+                        <span class="settings-unit-label" id="height-unit-label">in</span>
+                    </div>
+                </label>
+                <label>Weight Unit
+                    <select id="weight-unit" onchange="updateSettingsWeightLabel()">
+                        <option value="lb">Pounds (lb)</option>
+                        <option value="kg">Kilograms (kg)</option>
+                    </select>
+                </label>
+                <label>Height Unit
+                    <select id="height-unit" onchange="updateSettingsHeightLabel()">
+                        <option value="in">Inches (in)</option>
+                        <option value="cm">Centimetres (cm)</option>
+                    </select>
+                </label>
+                <p class="settings-hint">Body weight is used to calculate the load on exercises. Height is used to calculate distance traveled per rep for repetitive movements.</p>
+                <button onclick="saveSettings()">💾 Save Settings</button>
+            </div>
+
+            <!-- Custom Exercise Library -->
+            <h3 style="margin:20px 0 8px;font-size:17px;font-weight:700;color:#1c1c1e;">★ Custom Exercise Library</h3>
+            <div class="settings-form" id="custom-library-panel">
+                <p class="settings-hint">Add exercises not in the built-in library. They appear in the library search with a ★ badge and can be deleted from within the search results.</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <label class="ex-form-label" style="color:#3a3a3c;">Exercise Name</label>
+                    <input id="cl-name" type="text" placeholder="e.g. Cable Fly" style="width:100%;padding:12px;font-size:15px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:120px;">
+                            <label class="ex-form-label" style="color:#3a3a3c;">Category</label>
+                            <select id="cl-cat" style="width:100%;padding:10px;font-size:14px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;">
+                                <option value="upper">Upper Body</option>
+                                <option value="lower">Lower Body</option>
+                                <option value="core">Core</option>
+                                <option value="cardio">Cardio</option>
+                                <option value="full">Full Body</option>
+                                <option value="mobility">Mobility</option>
+                                <option value="custom">Other / Custom</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;min-width:120px;">
+                            <label class="ex-form-label" style="color:#3a3a3c;">Type</label>
+                            <select id="cl-type" style="width:100%;padding:10px;font-size:14px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;">
+                                <option value="isotonic">Isotonic</option>
+                                <option value="isometric">Isometric</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:100px;">
+                            <label class="ex-form-label" style="color:#3a3a3c;">Body Weight %</label>
+                            <input id="cl-bwpct" type="number" min="0" max="100" step="1" value="0" placeholder="0–100"
+                                style="width:100%;padding:10px;font-size:14px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;text-align:center;">
+                        </div>
+                        <div style="flex:1;min-width:100px;">
+                            <label class="ex-form-label" style="color:#3a3a3c;">Height % / rep</label>
+                            <input id="cl-hpct" type="number" min="0" max="100" step="1" placeholder="optional"
+                                style="width:100%;padding:10px;font-size:14px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;text-align:center;">
+                        </div>
+                        <div style="flex:1;min-width:100px;">
+                            <label class="ex-form-label" style="color:#3a3a3c;">Default Unit</label>
+                            <select id="cl-unit" style="width:100%;padding:10px;font-size:14px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1c1c1e;">
+                                <option value="reps">Reps</option>
+                                <option value="seconds">Seconds</option>
+                                <option value="meters">Meters</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="saveCustomLibraryFromSettings()" style="background:#ff9f0a;margin-top:4px;">★ Save to Library</button>
+                </div>
+                <div id="custom-library-list" style="margin-top:12px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Exercise entry modal -->
+    <div id="ex-modal-overlay" onclick="exModalCancel()"></div>
+    <div id="ex-modal">
+        <div id="ex-modal-title" class="ex-modal-title"></div>
+        <div id="ex-modal-body"></div>
+        <div class="ex-modal-footer">
+            <button class="ex-modal-cancel" onclick="exModalCancel()">Cancel</button>
+        </div>
     </div>
 
-    <div class="settings-info-row">
-      <div class="settings-info-icon">🔊</div>
-      <div>
-        <div class="settings-info-title">D-ATIS</div>
-        <div class="settings-info-desc">datis.clowd.io<br>FAA Digital ATIS</div>
-      </div>
+    <!-- Slide-up navigation menu -->
+    <div id="menu-overlay" onclick="toggleMenu()"></div>
+    <div id="menu-drawer">
+        <div id="menu-drawer-handle"></div>
+        <button class="menu-item active" data-tab="calendar" onclick="switchTab('calendar')">📅  Calendar</button>
+        <button class="menu-item" data-tab="plan"     onclick="switchTab('plan')">📋  Plan</button>
+        <button class="menu-item" data-tab="workout"  onclick="switchTab('workout')">🏋️  Workout</button>
+        <button class="menu-item" data-tab="progress" onclick="switchTab('progress')">📈  Progress</button>
+        <button class="menu-item" data-tab="settings" onclick="switchTab('settings')">⚙️ Settings</button>
     </div>
 
-    <div class="settings-section-label">Proxy</div>
+    <!-- Timer settings side drawer (slides in from right) — Phase 3: simplified -->
+    <div id="timer-settings-overlay" onclick="closeTimerDrawer()"></div>
+    <div id="timer-settings-drawer">
+        <div class="ts-header">
+            <span class="ts-title">⏱ Timer</span>
+            <button class="ts-close" onclick="closeTimerDrawer()">✕</button>
+        </div>
 
-    <div class="settings-info-row">
-      <div class="settings-info-icon">⚙️</div>
-      <div>
-        <div class="settings-info-title" id="proxyLabel">Loading…</div>
-        <div class="settings-info-desc" id="proxyDesc"></div>
-      </div>
+        <div class="ts-section">
+            <p class="ts-hint" style="margin:0;color:#8e8e93;font-size:13px;line-height:1.5;">
+                Active and rest durations are set per-exercise during workout creation.
+            </p>
+        </div>
+
+        <div class="ts-section">
+            <div class="ts-label" style="color:#ff453a;">Reset Timer</div>
+            <button class="ts-order-toggle" style="background:#3a3a3c;color:#ff453a;"
+                onclick="resetTimerFromDrawer()">↺ Reset Current Timer</button>
+        </div>
+
+        <div class="ts-section">
+            <div class="ts-label" style="color:#30d158;">Complete Workout</div>
+            <button class="ts-order-toggle" style="background:#1c3a28;color:#30d158;"
+                onclick="closeTimerDrawer(); completeWorkout()">✅ Complete Workout Early</button>
+        </div>
+
+        <div class="ts-section">
+            <div class="ts-label" style="color:#fff;">Sounds</div>
+            <button id="sound-toggle-btn" class="ts-order-toggle sound-off" onclick="toggleSound()">🔕 Sound Off</button>
+            <button id="sound-reset-btn" class="ts-order-toggle sound-off" onclick="resumeAudioContext()">Reset Sound</button>
+            <p class="ts-hint" style="margin:0;color:#8e8e93;font-size:13px;line-height:1.5;">
+                Sound On/Off button toggles rest/active countdown timer sound.  Reset Sound button attempts to re-active sound after switching between apps if it doesn't work automatically.
+            </p>
+        </div>
+        
     </div>
 
-  </div>
-  <div class="settings-footer">
-    PilotWx · v<span id="appVersion">1.0</span><br>
-    Cache: <span id="cacheStatus">checking…</span>
-  </div>
 </div>
 
-<header>
-  <div class="logo">
-    <span class="logo-mark" id="logoMark" onclick="openSettings()" title="Settings">
-      <svg xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 43 44"
-          width="22" height="22"
-          style="display:inline-block;vertical-align:middle;margin-right:5px;margin-bottom:1px">
-        <path d="M 15.12,1.99
-                C 14.86,1.38 13.29,0.65 13.00,0.00
-                  15.29,0.38 15.88,-0.01 17.11,1.19
-                  21.24,5.25 24.14,13.40 26.71,18.09
-                  30.74,20.43 32.41,17.14 41.56,20.48
-                  41.56,20.48 43.05,21.19 43.05,21.87
-                  43.05,22.72 41.56,23.57 41.56,23.57
-                  32.41,26.91 30.54,23.77 26.86,26.01
-                  23.61,31.04 21.03,38.97 17.04,43.04
-                  15.78,44.33 15.40,43.60 13.00,44.00
-                  13.50,42.87 14.44,43.01 14.92,41.85
-                  16.18,36.87 17.97,31.77 17.97,24.95
-                  17.76,25.45 17.86,25.02 16.97,25.06
-                  16.93,27.88 17.11,27.34 16.89,27.88
-                  14.89,28.07 10.51,28.18 9.00,27.00
-                  9.00,27.00 9.00,23.00 9.00,23.00
-                  9.00,23.00 7.42,22.77 5.99,22.53
-                  5.99,25.12 3.50,29.51 1.97,30.87
-                  0.82,31.14 0.00,31.00 0.00,31.00
-                  0.00,31.00 1.02,25.10 1.02,22.29
-                  0.10,22.09 0.00,22.53 -0.10,21.61
-                  0.07,20.49 0.05,21.03 1.06,20.73
-                  0.80,17.01 0.00,13.00 0.00,13.00
-                  0.00,13.00 1.16,12.90 2.01,13.10
-                  3.42,14.21 5.38,17.66 6.02,20.45
-                  7.96,20.18 9.00,20.00 9.00,20.00
-                  9.06,18.86 8.95,18.30 9.02,17.23
-                  10.58,15.59 14.02,16.25 17.00,16.00
-                  17.00,16.00 17.08,18.30 17.00,19.05
-                  17.89,19.01 18.00,19.00 18.00,19.00
-                  17.69,12.22 16.45,7.69 15.12,1.99 Z" fill="currentColor"/>
-      </svg>
-      PILOTWX</span>
-  </div>
-  <div class="utc-clock">
-    <div class="utc-time" id="utcTime">--:--:--</div>
-    <div id="utcDate">---- UTC</div>
-  </div>
-</header>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="./exercise-library.js"></script>
+    <script src="./app.js"></script>
 
-<div class="search-bar">
-  <input
-    class="icao-input"
-    id="icaoInput"
-    type="text"
-    maxlength="4"
-    placeholder="ICAO"
-    autocomplete="off"
-    autocorrect="off"
-    autocapitalize="characters"
-    spellcheck="false"
-  />
-  <button class="btn" id="fetchBtn" onclick="fetchWeather()">GO</button>
-</div>
-
-<div class="history-row" id="historyRow"></div>
-
-<div class="tabs">
-  <button class="tab active" id="tabMetar" onclick="switchTab('metar')">METAR</button>
-  <button class="tab" id="tabTaf"   onclick="switchTab('taf')"  disabled>TAF</button>
-  <button class="tab" id="tabAtis"  onclick="switchTab('atis')" disabled>D-ATIS</button>
-</div>
-
-<div class="content">
-
-  <div class="panel active" id="panelMetar">
-    <div id="metarContent">
-      <div class="empty-state">
-        <div class="empty-icon">🛫</div>
-        <h3>Enter Airport ICAO</h3>
-        <p>Type a 4-letter ICAO identifier<br>and press GO</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel" id="panelTaf">
-    <div id="tafContent">
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <h3>No TAF Loaded</h3>
-        <p>Fetch a METAR first</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel" id="panelAtis">
-    <div id="atisContent">
-      <div class="empty-state">
-        <div class="empty-icon">📡</div>
-        <h3>No D-ATIS Loaded</h3>
-        <p>Fetch a METAR first, then check<br>if D-ATIS is available</p>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<script>
-// ─── CONFIG ──────────────────────────────────────────────────
-// PROXY OPTIONS (edit to match your deployment):
-//
-//   OPTION A — Self-hosted Cloudflare Worker (recommended for production)
-//              Deploy worker.js to Cloudflare Workers, set PROXY_BASE to your worker URL.
-//              e.g. 'https://pilotwx-proxy.YOUR-SUBDOMAIN.workers.dev'
-//
-//   OPTION B — corsproxy.io  (free, works on GitHub Pages / local dev)
-//              Set PROXY_BASE = '' to use the built-in corsproxy.io fallback.
-//
-const PROXY_BASE = 'https://pilotapp.aotfnat.workers.dev';  // ← set to your Cloudflare Worker URL when deployed (trailing slash optional)
-
-// Normalize: strip any trailing slash so URLs never get a double-slash
-const _BASE = PROXY_BASE.replace(/\/+$/, '');
-
-function metarUrl(icao) {
-  const target = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=json&hours=2`;
-  if (_BASE) return `${_BASE}/metar?ids=${icao}`;
-  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-}
-
-function tafUrl(icao) {
-  const target = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=json&time=valid`;
-  if (_BASE) return `${_BASE}/taf?ids=${icao}`;
-  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-}
-
-function tafRadiusUrl(lat, lon, radiusNm) {
-  // Search for TAFs within radiusNm nautical miles of lat/lon.
-  // aviationweather.gov accepts &bbox or &radial; radial format is:
-  //   &radial=lon,lat,radiusNm (yes, lon first)
-  const target = `https://aviationweather.gov/api/data/taf?format=json&time=valid&radial=${lon},${lat},${radiusNm}`;
-  if (_BASE) return `${_BASE}/taf-radius?lat=${lat}&lon=${lon}&radius=${radiusNm}`;
-  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-}
-
-// Fetch TAF for icao; if none found and metar data has coordinates,
-// fall back to nearest TAF within 75nm. Returns { tafData, nearestIcao }.
-async function fetchTafWithFallback(icao, metarData) {
-  // Primary: try the exact ICAO
-  try {
-    const data = await safeFetch(tafUrl(icao));
-    if (Array.isArray(data) && data.length > 0) {
-      return { tafData: data, nearestIcao: null };
-    }
-  } catch(e) { /* fall through */ }
-
-  // Fallback: radial search using METAR coordinates
-  const lat = metarData && (metarData.latitude  || metarData.lat);
-  const lon = metarData && (metarData.longitude || metarData.lon);
-  if (!lat || !lon) return { tafData: [], nearestIcao: null };
-
-  try {
-    const data = await safeFetch(tafRadiusUrl(lat, lon, 75));
-    if (Array.isArray(data) && data.length > 0) {
-      // Sort by distance — API returns closest first, but confirm with stationId
-      const nearest = data[0];
-      const nearestIcao = nearest.stationId || nearest.icaoId || nearest.station_id || null;
-      // Don't report as "nearest" if it's the same airport
-      const isDifferent = nearestIcao && nearestIcao.toUpperCase() !== icao.toUpperCase();
-      return { tafData: data, nearestIcao: isDifferent ? nearestIcao : null };
-    }
-  } catch(e) { /* fall through */ }
-
-  return { tafData: [], nearestIcao: null };
-}
-
-function atisUrl(icao) {
-  const target = `https://datis.clowd.io/api/${icao}`;
-  if (_BASE) return `${_BASE}/atis/${icao}`;
-  return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
-}
-
-// ─── D-ATIS AIRPORT LIST ─────────────────────────────────────
-// Verified against atisrelay.com/airports (the same source as datis.clowd.io).
-// Only airports confirmed to have FAA Digital ATIS are included.
-// Last verified: June 2025.
-const DATIS_AIRPORTS = new Set([
-  'KALB', // Albany Intl
-  'KABQ', // Albuquerque Intl Sunport
-  'KAUS', // Austin-Bergstrom Intl
-  'KBWI', // Baltimore/Washington Intl
-  'KBDL', // Bradley Intl
-  'KBUF', // Buffalo Niagara Intl
-  'KBOS', // Boston Logan Intl
-  'KBOI', // Boise Air Terminal
-  'KBNA', // Nashville Intl
-  'KBUR', // Bob Hope (Burbank)
-  'KCHS', // Charleston AFB/Intl
-  'KCLT', // Charlotte/Douglas Intl
-  'KCLE', // Cleveland-Hopkins Intl
-  'KCMH', // John Glenn Columbus Intl
-  'KCVG', // Cincinnati/Northern Kentucky Intl
-  'KDAL', // Dallas Love Field
-  'KDCA', // Ronald Reagan Washington Natl
-  'KDEN', // Denver Intl
-  'KDFW', // Dallas-Fort Worth Intl
-  'KDTW', // Detroit Metro Wayne County
-  'KELP', // El Paso Intl
-  'KEWR', // Newark Liberty Intl
-  'KFLL', // Fort Lauderdale/Hollywood Intl
-  'KGSO', // Piedmont Triad Intl
-  'KHOU', // William P Hobby
-  'KHPN', // Westchester County
-  'KIAD', // Washington Dulles Intl
-  'KIAH', // George Bush Intercontinental
-  'KIND', // Indianapolis Intl
-  'KJAX', // Jacksonville Intl
-  'KJFK', // John F Kennedy Intl
-  'KADW', // Joint Base Andrews
-  'KLAS', // Harry Reid Intl (Las Vegas)
-  'KLAX', // Los Angeles Intl
-  'KLGA', // LaGuardia
-  'KLIT', // Bill and Hillary Clinton Natl
-  'KMCI', // Kansas City Intl
-  'KMCO', // Orlando Intl
-  'KMDW', // Chicago Midway Intl
-  'KMEM', // Memphis Intl
-  'KMIA', // Miami Intl
-  'KMKE', // General Mitchell Intl (Milwaukee)
-  'KMSP', // Minneapolis-St Paul Intl
-  'KMSY', // Louis Armstrong New Orleans Intl
-  'KOAK', // Metro Oakland Intl
-  'KOKC', // Will Rogers World
-  'KOMA', // Eppley Airfield (Omaha)
-  'KONT', // Ontario Intl
-  'KORD', // Chicago O'Hare Intl
-  'KPBI', // Palm Beach Intl
-  'KPHL', // Philadelphia Intl
-  'KPHX', // Phoenix Sky Harbor Intl
-  'KPIT', // Pittsburgh Intl
-  'KPDX', // Portland Intl
-  'KPVD', // Rhode Island TF Green Intl
-  'KRDU', // Raleigh-Durham Intl
-  'KRNO', // Reno/Tahoe Intl
-  'KRSW', // Southwest Florida Intl
-  'KSAN', // San Diego Intl
-  'KSAT', // San Antonio Intl
-  'KSDF', // Louisville Muhammad Ali Intl
-  'KSEA', // Seattle-Tacoma Intl
-  'KSFO', // San Francisco Intl
-  'KSJC', // Norman Y Mineta San Jose Intl
-  'KSLC', // Salt Lake City Intl
-  'KSMF', // Sacramento Intl
-  'KSNA', // John Wayne/Orange County
-  'KSTL', // St Louis Lambert Intl
-  'KTEB', // Teterboro
-  'KTPA', // Tampa Intl
-  'KTUL', // Tulsa Intl
-  'KVNY', // Van Nuys
-  'PANC', // Ted Stevens Anchorage Intl
-  'PHNL', // Daniel K Inouye Intl (Honolulu)
-  'TJSJ', // Luis Munoz Marin Intl (San Juan)
-]);
-
-
-// ─── UTC CLOCK ────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const hh = String(now.getUTCHours()).padStart(2,'0');
-  const mm = String(now.getUTCMinutes()).padStart(2,'0');
-  const ss = String(now.getUTCSeconds()).padStart(2,'0');
-  document.getElementById('utcTime').textContent = `${hh}:${mm}:${ss}`;
-  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  document.getElementById('utcDate').textContent =
-    `${String(now.getUTCDate()).padStart(2,'0')} ${months[now.getUTCMonth()]} UTC`;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ─── OFFLINE DETECTION ───────────────────────────────────────
-window.addEventListener('online',  () => document.getElementById('offlineBanner').classList.remove('show'));
-window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
-if (!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
-
-// ─── HISTORY ─────────────────────────────────────────────────
-let wxHistory = JSON.parse(localStorage.getItem('wxHistory') || '[]');
-let currentICAO = '';
-let atisAvailable = false;
-
-function renderHistory() {
-  const row = document.getElementById('historyRow');
-  row.innerHTML = '';
-  wxHistory.slice(0,8).forEach(icao => {
-    const chip = document.createElement('button');
-    chip.className = 'hist-chip';
-    chip.textContent = icao;
-    chip.onclick = () => {
-      document.getElementById('icaoInput').value = icao;
-      fetchWeather();
-    };
-    row.appendChild(chip);
-  });
-}
-
-function addHistory(icao) {
-  wxHistory = [icao, ...wxHistory.filter(x => x !== icao)].slice(0,8);
-  localStorage.setItem('wxHistory', JSON.stringify(wxHistory));
-  renderHistory();
-}
-
-renderHistory();
-
-// ─── TABS ─────────────────────────────────────────────────────
-function switchTab(tab) {
-  ['metar','taf','atis'].forEach(t => {
-    const panelId = 'panel' + t.charAt(0).toUpperCase() + t.slice(1);
-    const tabId   = 'tab'   + t.charAt(0).toUpperCase() + t.slice(1);
-    document.getElementById(panelId).classList.toggle('active', t === tab);
-    document.getElementById(tabId).classList.toggle('active', t === tab);
-  });
-}
-
-// Reset all tabs to a clean state before each fetch — clears stale active/disabled
-// from a previous airport so the correct default tab is always shown.
-function resetTabs() {
-  ['metar','taf','atis'].forEach(t => {
-    const tabEl = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
-    tabEl.classList.remove('active');
-    tabEl.disabled = true;
-  });
-  // METAR tab is always enabled (we always attempt to fetch it)
-  document.getElementById('tabMetar').disabled = false;
-}
-
-// ─── METAR PARSING ───────────────────────────────────────────
-function parseMetar(raw) {
-  const out = { raw };
-
-  const tMatch = raw.match(/\b(\d{2})(\d{2})(\d{2})Z\b/);
-  if (tMatch) out.time = `${tMatch[1]}d ${tMatch[2]}:${tMatch[3]}Z`;
-
-  const wMatch = raw.match(/\b(\d{3}|VRB)(\d{2,3})(G(\d{2,3}))?KT\b/);
-  if (wMatch) {
-    const spd = parseInt(wMatch[2]);
-    out.windStr = wMatch[1] === 'VRB'
-      ? `VRB ${spd}${wMatch[4] ? 'G'+wMatch[4] : ''}KT`
-      : `${wMatch[1]}° ${spd}${wMatch[4] ? 'G'+wMatch[4] : ''}KT`;
-  }
-
-  const vMatch = raw.match(/\b(\d+(?:\/\d+)?\s*SM)\b/);
-  if (vMatch) out.vis = vMatch[1];
-
-  const skyParts = [];
-  const skyRe = /\b(SKC|CLR|FEW|SCT|BKN|OVC)(\d{3})?(CB|TCU)?\b/g;
-  let sm;
-  while ((sm = skyRe.exec(raw)) !== null) {
-    const cover = sm[1];
-    const alt = sm[2] ? parseInt(sm[2]) * 100 : null;
-    const altStr = alt ? alt.toLocaleString()+'ft' : '';
-    skyParts.push(`${cover}${altStr}${sm[3]||''}`);
-    if (!out.ceiling && (cover === 'BKN' || cover === 'OVC') && alt) out.ceiling = alt;
-  }
-  out.sky = skyParts.join(' ') || 'CLR';
-
-  const tdMatch = raw.match(/\b(M?\d{2})\/(M?\d{2})\b/);
-  if (tdMatch) {
-    out.temp = tdMatch[1].replace('M','-');
-    out.dew  = tdMatch[2].replace('M','-');
-  }
-
-  const aMatch = raw.match(/\bA(\d{4})\b/);
-  if (aMatch) out.altim = (parseInt(aMatch[1]) / 100).toFixed(2) + ' inHg';
-  const qMatch = raw.match(/\bQ(\d{4})\b/);
-  if (qMatch && !aMatch) out.altim = parseInt(qMatch[1]) + ' hPa';
-
-  const wxPhenomena = raw.match(/\b(-|\+|VC)?(TS|SH|FZ|DR|BL|MI|PR|BC|DZ|RA|SN|SG|IC|PL|GR|GS|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)+\b/g);
-  if (wxPhenomena) out.wx = wxPhenomena.join(' ');
-
-  const vis_sm = out.vis ? parseFloat(out.vis) : 10;
-  const ceil = out.ceiling || 9999;
-  if      (ceil < 500  || vis_sm < 1) out.flightCat = 'LIFR';
-  else if (ceil < 1000 || vis_sm < 3) out.flightCat = 'IFR';
-  else if (ceil < 3000 || vis_sm < 5) out.flightCat = 'MVFR';
-  else                                 out.flightCat = 'VFR';
-
-  const rmkIdx = raw.indexOf(' RMK ');
-  if (rmkIdx !== -1) out.remarks = raw.substring(rmkIdx + 5);
-
-  return out;
-}
-
-function fcClass(cat) {
-  return { VFR:'vfr', MVFR:'mvfr', IFR:'ifr', LIFR:'lifr' }[cat] || '';
-}
-
-function metarAge(raw) {
-  const tMatch = raw.match(/\b\d{2}(\d{2})(\d{2})Z\b/);
-  if (!tMatch) return { label: 'Unknown', cls: '' };
-  const now = new Date();
-  const obsMin = parseInt(tMatch[1]) * 60 + parseInt(tMatch[2]);
-  const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
-  let diff = nowMin - obsMin;
-  if (diff < 0) diff += 1440;
-  if (diff < 65)  return { label: `${diff}m ago`, cls: 'fresh' };
-  if (diff < 120) return { label: `${diff}m ago`, cls: 'stale' };
-  return { label: `${diff}m ago`, cls: 'old' };
-}
-
-function renderMetar(data) {
-  const raw = data.rawOb || data.raw_text || (typeof data === 'string' ? data : JSON.stringify(data));
-  const m = parseMetar(raw);
-  const age = metarAge(m.raw);
-  const cat = m.flightCat || 'VFR';
-
-  let html = `
-    <div class="wx-card">
-      <div class="wx-card-header">
-        <span class="wx-card-title">METAR · ${currentICAO}</span>
-        <span class="wx-card-age ${age.cls}">${age.label}</span>
-      </div>
-      <div class="raw-metar">${m.raw}</div>
-      <div class="flt-cat ${cat}">${cat}</div>
-      <div class="decoded-grid">`;
-
-  if (m.windStr) html += `<div class="wx-item"><div class="wx-label">Wind</div><div class="wx-value">${m.windStr}</div></div>`;
-  if (m.vis)     html += `<div class="wx-item"><div class="wx-label">Visibility</div><div class="wx-value">${m.vis}</div></div>`;
-  html += `<div class="wx-item"><div class="wx-label">Sky</div><div class="wx-value" style="font-size:13px">${m.sky}</div></div>`;
-  if (m.ceiling) html += `<div class="wx-item"><div class="wx-label">Ceiling</div><div class="wx-value ${fcClass(cat)}">${m.ceiling.toLocaleString()}<small>ft</small></div></div>`;
-  if (m.temp)    html += `<div class="wx-item"><div class="wx-label">Temp / Dew</div><div class="wx-value">${m.temp}° <small>/</small> ${m.dew}°<small>C</small></div></div>`;
-  if (m.altim)   html += `<div class="wx-item"><div class="wx-label">Altimeter</div><div class="wx-value" style="font-size:15px">${m.altim}</div></div>`;
-  if (m.wx)      html += `<div class="wx-item" style="grid-column:1/-1"><div class="wx-label">Weather</div><div class="wx-value" style="font-size:14px;color:var(--yellow)">${m.wx}</div></div>`;
-
-  html += `</div>`;
-  if (m.remarks) html += `<div class="remarks"><div class="remarks-label">Remarks</div>${m.remarks}</div>`;
-  html += `</div>`;
-  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
-
-  document.getElementById('metarContent').innerHTML = html;
-}
-
-// ─── TAF PARSING ─────────────────────────────────────────────
-function parseTafPeriod(text) {
-  const vis_sm = (() => { const m = text.match(/\b(\d+(?:\/\d+)?)\s*SM\b/); return m ? parseFloat(m[1]) : 10; })();
-  let ceil = 9999;
-  const skyRe2 = /\b(BKN|OVC)(\d{3})\b/g;
-  let sm2;
-  while ((sm2 = skyRe2.exec(text)) !== null) {
-    const alt = parseInt(sm2[2]) * 100;
-    if (alt < ceil) ceil = alt;
-  }
-  if      (ceil < 500  || vis_sm < 1) return 'LIFR';
-  else if (ceil < 1000 || vis_sm < 3) return 'IFR';
-  else if (ceil < 3000 || vis_sm < 5) return 'MVFR';
-  else                                 return 'VFR';
-}
-
-function renderTaf(data, nearestIcao) {
-  if (!data || !data.length) {
-    document.getElementById('tafContent').innerHTML = `<div class="no-atis"><div style="font-size:30px;margin-bottom:10px;opacity:0.3">📋</div><div>No TAF available within 75nm of ${currentICAO}</div></div>`;
-    document.getElementById('tabTaf').disabled = true;
-    return;
-  }
-  document.getElementById('tabTaf').disabled = false;
-
-  const t = data[0];
-  const rawTaf = t.rawTAF || t.raw_text || '';
-  const displayIcao = nearestIcao || currentICAO;
-
-  // Banner shown when TAF is from a different airport
-  const nearestBanner = nearestIcao
-    ? `<div style="background:rgba(255,211,61,0.1);border-bottom:1px solid rgba(255,211,61,0.25);padding:7px 14px;font-family:var(--mono);font-size:11px;color:var(--yellow)">
-        ⚠ No TAF for ${currentICAO} — showing nearest: ${nearestIcao}
-       </div>`
-    : '';
-
-  let html = `<div class="taf-card">
-    <div class="wx-card-header">
-      <span class="wx-card-title">TAF · ${displayIcao}${nearestIcao ? ' <span style="font-size:9px;color:var(--yellow);letter-spacing:1px">NEAREST</span>' : ''}</span>
-      <span class="wx-card-age fresh">Valid ${t.validTimeFrom || ''} → ${t.validTimeTo || ''}</span>
-    </div>
-    ${nearestBanner}
-    <div class="taf-raw">${rawTaf}</div>`;
-
-  // Parse forecast periods from raw TAF
-  if (rawTaf) {
-    const periods = rawTaf.split(/\b(FM\d{6}|BECMG|TEMPO|PROB\d{2})\b/).filter(Boolean);
-    const groups = [];
-    let current = null;
-    periods.forEach(p => {
-      if (/^(FM\d{6}|BECMG|TEMPO|PROB\d{2})$/.test(p.trim())) {
-        if (current) groups.push(current);
-        current = { type: p.trim(), text: '' };
-      } else if (current) {
-        current.text += p;
-      } else {
-        // Initial conditions
-        current = { type: 'INIT', text: p };
-      }
-    });
-    if (current) groups.push(current);
-
-    groups.forEach(g => {
-      const fc = parseTafPeriod(g.text);
-      let timeLabel = g.type;
-      if (/^FM(\d{2})(\d{2})(\d{2})$/.test(g.type)) {
-        const mm = g.type.match(/^FM(\d{2})(\d{2})(\d{2})$/);
-        timeLabel = `FM ${mm[1]}d ${mm[2]}:${mm[3]}Z`;
-      }
-      html += `<div class="taf-period">
-        <span class="taf-time">${timeLabel}</span>
-        <span class="taf-wx">${g.text.trim().replace(/\s+/g,' ')}</span>
-        <span class="taf-cat ${fc}">${fc}</span>
-      </div>`;
-    });
-  }
-
-  html += `</div>`;
-  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
-  document.getElementById('tafContent').innerHTML = html;
-}
-
-// ─── ATIS HELPERS ────────────────────────────────────────────
-// datis.clowd.io returns: { airport, type, datis }
-// The `datis` string looks like:
-//   "[KJFK ATIS INFORMATION S 2354Z ...] or [... INFORMATION SIERRA 2354Z ...]"
-// We parse out the information letter and the Zulu time from that text.
-
-function parseAtisInfoCode(text) {
-  if (!text) return '?';
-  // "INFORMATION S " or "INFORMATION SIERRA " (spelled-out NATO phonetic)
-  const nato = {
-    ALPHA:'A', BRAVO:'B', CHARLIE:'C', DELTA:'D', ECHO:'E', FOXTROT:'F',
-    GOLF:'G', HOTEL:'H', INDIA:'I', JULIET:'J', KILO:'K', LIMA:'L',
-    MIKE:'M', NOVEMBER:'N', OSCAR:'O', PAPA:'P', QUEBEC:'Q', ROMEO:'R',
-    SIERRA:'S', TANGO:'T', UNIFORM:'U', VICTOR:'V', WHISKEY:'W',
-    XRAY:'X', YANKEE:'Y', ZULU:'Z',
-  };
-  // Try single-letter first: "INFORMATION K " or "INFO K "
-  const single = text.match(/\bINFO(?:RMATION)?\s+([A-Z])\b/i);
-  if (single) return single[1].toUpperCase();
-  // Try NATO phonetic
-  const phonetic = text.match(/\bINFO(?:RMATION)?\s+([A-Z]+)\b/i);
-  if (phonetic) {
-    const letter = nato[phonetic[1].toUpperCase()];
-    if (letter) return letter;
-  }
-  return '?';
-}
-
-function parseAtisTime(text) {
-  if (!text) return null;
-  // e.g. "2354Z" or "0012Z"
-  const m = text.match(/\b(\d{4})Z\b/);
-  if (!m) return null;
-  return m[1]; // e.g. "2354"
-}
-
-function atisAgeMinutes(timeStr) {
-  if (!timeStr || timeStr.length !== 4) return null;
-  const now = new Date();
-  const obsMin = parseInt(timeStr.slice(0,2)) * 60 + parseInt(timeStr.slice(2,4));
-  const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
-  let diff = nowMin - obsMin;
-  if (diff < 0) diff += 1440;
-  return diff;
-}
-
-// ─── ATIS RENDER ─────────────────────────────────────────────
-function renderAtis(atis) {
-  if (!atis || !atis.length) {
-    document.getElementById('atisContent').innerHTML = `
-      <div class="no-atis">
-        <div style="font-size:30px;margin-bottom:10px;opacity:0.3">📡</div>
-        <div>No D-ATIS available for ${currentICAO}</div>
-        <div style="margin-top:6px;font-size:11px;color:var(--text-dim)">D-ATIS is only available at select major airports</div>
-      </div>`;
-    atisAvailable = false;
-    document.getElementById('tabAtis').disabled = true;
-    return;
-  }
-
-  atisAvailable = true;
-  document.getElementById('tabAtis').disabled = false;
-
-  const a = atis[0];
-  const datisText = a.datis || a.text || '';
-  const infoCode  = parseAtisInfoCode(datisText);
-  const timeStr   = parseAtisTime(datisText);
-  const ageMin    = atisAgeMinutes(timeStr);
-
-  // Age label + colour class (same thresholds as METAR)
-  let ageLabel = timeStr ? `${timeStr.slice(0,2)}:${timeStr.slice(2,4)}Z` : '';
-  let ageCls   = '';
-  if (ageMin !== null) {
-    ageLabel = `${ageMin}m ago · ${timeStr.slice(0,2)}:${timeStr.slice(2,4)}Z`;
-    ageCls   = ageMin < 65 ? 'fresh' : ageMin < 120 ? 'stale' : 'old';
-  }
-
-  const facilityType = a.type || a.facility_type || 'ATIS';
-
-  let html = `<div class="atis-card">
-    <div class="atis-header">
-      <div>
-        <div class="wx-card-title">D-ATIS · ${currentICAO}</div>
-        <div style="font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:2px">${facilityType}</div>
-      </div>
-      <div style="text-align:right">
-        <div class="atis-info-code">${infoCode}</div>
-        ${ageLabel ? `<div class="wx-card-age ${ageCls}" style="margin-top:2px">${ageLabel}</div>` : ''}
-      </div>
-    </div>
-    <div class="atis-body">`;
-
-  if (datisText) {
-    html += `<div style="line-height:1.9">${datisText}</div>`;
-  } else {
-    const fields = [
-      ['Time', a.time], ['Wind', a.wind], ['Visibility', a.visibility],
-      ['Sky', a.sky_condition], ['Temp/Dew', a.temp_dewpoint],
-      ['Altimeter', a.altimeter], ['Runway', a.runway_in_use],
-      ['Approaches', a.approaches_in_use], ['NOTAMs', a.notams],
-      ['Remarks', a.remarks],
-    ];
-    fields.forEach(([label, val]) => {
-      if (val) html += `<div class="atis-line"><span class="atis-key">${label}</span>${val}</div>`;
-    });
-  }
-
-  html += `</div></div>`;
-  html += `<div class="refresh-row"><button class="btn btn-secondary" style="flex:1" onclick="fetchWeather()">↻ REFRESH</button></div>`;
-  document.getElementById('atisContent').innerHTML = html;
-}
-
-// ─── FETCH ────────────────────────────────────────────────────
-async function safeFetch(url, timeout = 12000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeout);
-  try {
-    const r = await fetch(url, { signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json();
-  } catch(e) {
-    clearTimeout(timer);
-    throw e;
-  }
-}
-
-async function fetchWeather() {
-  const raw = document.getElementById('icaoInput').value.trim().toUpperCase();
-  if (!raw || raw.length < 3) { document.getElementById('icaoInput').focus(); return; }
-
-  currentICAO = raw;
-  addHistory(raw);
-
-  const hasDatis = DATIS_AIRPORTS.has(raw);
-
-  // Reset all tabs to a clean disabled state, then switch to the correct default.
-  // This ensures a non-D-ATIS airport always shows METAR even if D-ATIS was
-  // the active tab from a previous search.
-  resetTabs();
-  switchTab(hasDatis ? 'atis' : 'metar');
-
-  // Set loading states
-  document.getElementById('metarContent').innerHTML = `<div class="loader"><div class="spinner"></div>Fetching METAR for ${raw}…</div>`;
-  document.getElementById('tafContent').innerHTML   = `<div class="loader"><div class="spinner"></div>Fetching TAF for ${raw}…</div>`;
-  document.getElementById('atisContent').innerHTML  = `<div class="loader"><div class="spinner"></div>${hasDatis ? 'Fetching' : 'Checking'} D-ATIS for ${raw}…</div>`;
-
-  if (hasDatis) {
-    // D-ATIS airport: ATIS tab is already active from switchTab above
-
-    // Fetch D-ATIS first
-    try {
-      const data = await safeFetch(atisUrl(raw), 10000);
-      renderAtis(Array.isArray(data) && data.length > 0 ? data : []);
-    } catch(e) {
-      renderAtis([]);
-    }
-
-    // Then METAR + TAF concurrently (TAF uses fallback to nearest airport)
-    const [metarResult, tafResult] = await Promise.allSettled([
-      safeFetch(metarUrl(raw)),
-      safeFetch(tafUrl(raw)),   // primary TAF attempt runs concurrently with METAR
-    ]);
-
-    const metarData = metarResult.status === 'fulfilled' && metarResult.value?.length
-      ? metarResult.value[0] : null;
-
-    if (metarData) {
-      renderMetar(metarData);
-    } else {
-      document.getElementById('metarContent').innerHTML =
-        `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
-         <div class="empty-state"><p>Check your connection and try again.</p></div>`;
-    }
-
-    // If primary TAF succeeded use it; otherwise try radial fallback
-    if (tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) && tafResult.value.length > 0) {
-      renderTaf(tafResult.value, null);
-    } else {
-      document.getElementById('tafContent').innerHTML = `<div class="loader"><div class="spinner"></div>Searching nearby airports for TAF…</div>`;
-      const { tafData, nearestIcao } = await fetchTafWithFallback(raw, metarData);
-      renderTaf(tafData, nearestIcao);
-    }
-
-  } else {
-    // Non-D-ATIS airport: METAR tab already active from switchTab above, fetch all three concurrently
-    const [metarResult, tafResult, atisResult] = await Promise.allSettled([
-      safeFetch(metarUrl(raw)),
-      safeFetch(tafUrl(raw)),
-      safeFetch(atisUrl(raw), 10000),
-    ]);
-
-    const metarData = metarResult.status === 'fulfilled' && metarResult.value?.length
-      ? metarResult.value[0] : null;
-
-    if (metarData) {
-      renderMetar(metarData);
-    } else {
-      document.getElementById('metarContent').innerHTML =
-        `<div class="error-msg">METAR fetch failed${metarResult.reason ? ': ' + metarResult.reason.message : ''}</div>
-         <div class="empty-state"><p>US airports use K prefix (e.g. KPHX, KLAX)</p></div>`;
-    }
-
-    // If primary TAF succeeded use it; otherwise try radial fallback using METAR coords
-    if (tafResult.status === 'fulfilled' && Array.isArray(tafResult.value) && tafResult.value.length > 0) {
-      renderTaf(tafResult.value, null);
-    } else {
-      document.getElementById('tafContent').innerHTML = `<div class="loader"><div class="spinner"></div>Searching nearby airports for TAF…</div>`;
-      const { tafData, nearestIcao } = await fetchTafWithFallback(raw, metarData);
-      renderTaf(tafData, nearestIcao);
-    }
-
-    renderAtis(atisResult.status === 'fulfilled' && Array.isArray(atisResult.value) && atisResult.value.length > 0
-      ? atisResult.value : []);
-  }
-}
-
-// ─── ENTER KEY ────────────────────────────────────────────────
-document.getElementById('icaoInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') fetchWeather();
-  setTimeout(() => { e.target.value = e.target.value.toUpperCase(); }, 0);
-});
-
-// ─── SETTINGS DRAWER ─────────────────────────────────────────
-function openSettings() {
-  document.getElementById('settingsDrawer').classList.add('open');
-  document.getElementById('settingsOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  populateSettingsInfo();
-}
-
-function closeSettings() {
-  document.getElementById('settingsDrawer').classList.remove('open');
-  document.getElementById('settingsOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Close on Escape key
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSettings(); });
-
-function populateSettingsInfo() {
-  // Proxy info
-  const proxyLabel = document.getElementById('proxyLabel');
-  const proxyDesc  = document.getElementById('proxyDesc');
-  if (_BASE) {
-    proxyLabel.textContent = 'Cloudflare Worker';
-    proxyDesc.textContent  = _BASE;
-  } else {
-    proxyLabel.textContent = 'corsproxy.io';
-    proxyDesc.textContent  = 'Public CORS proxy (fallback mode)';
-  }
-
-  // Cache info
-  if ('caches' in window) {
-    caches.open('pilotwx-v2').then(cache => cache.keys()).then(keys => {
-      document.getElementById('cacheStatus').textContent =
-        keys.length > 0 ? `${keys.length} item(s) cached` : 'Empty';
-    }).catch(() => {
-      document.getElementById('cacheStatus').textContent = 'Unavailable';
-    });
-  } else {
-    document.getElementById('cacheStatus').textContent = 'Not supported';
-  }
-}
-
-// ─── UPDATE CHECK ─────────────────────────────────────────────
-async function checkForUpdate() {
-  const btn       = document.getElementById('updateBtn');
-  const btnIcon   = document.getElementById('updateBtnIcon');
-  const btnLabel  = document.getElementById('updateBtnLabel');
-  const statusEl  = document.getElementById('updateStatus');
-
-  // Reset state
-  btn.disabled = true;
-  btn.className = 'btn-settings';
-  btnIcon.textContent  = '⟳';
-  btnLabel.textContent = 'Checking…';
-  statusEl.className   = 'update-status';
-  statusEl.textContent = '';
-
-  if (!('serviceWorker' in navigator)) {
-    showUpdateStatus('warn', 'Service Worker not supported in this browser.');
-    resetUpdateBtn();
-    return;
-  }
-
-  try {
-    const reg = await navigator.serviceWorker.getRegistration();
-
-    if (!reg) {
-      showUpdateStatus('warn', 'No service worker registered yet. Try reloading the app first.');
-      resetUpdateBtn();
-      return;
-    }
-
-    // Ask the SW to check for a new version
-    await reg.update();
-
-    if (reg.installing) {
-      // A new SW is being installed right now
-      showUpdateStatus('info', 'Update found! Installing… The app will reload automatically when ready.');
-      btnIcon.textContent  = '✓';
-      btnLabel.textContent = 'Update Found';
-      btn.className = 'btn-settings success';
-
-      // Watch for the SW to finish installing
-      reg.installing.addEventListener('statechange', function() {
-        if (this.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            // There's already an active SW — new one is waiting
-            showUpdateStatus('success', 'Update ready! Tap below to reload and apply it.');
-            addReloadButton();
-          } else {
-            showUpdateStatus('success', 'App installed for offline use.');
-          }
-        }
-      });
-
-    } else if (reg.waiting) {
-      // Update downloaded but waiting to activate
-      showUpdateStatus('success', 'Update ready! Tap below to reload and apply it.');
-      btnIcon.textContent  = '✓';
-      btnLabel.textContent = 'Update Ready';
-      btn.className = 'btn-settings success';
-      addReloadButton();
-
-    } else {
-      // No update found
-      showUpdateStatus('success', 'You are up to date. No new version available.');
-      btnIcon.textContent  = '✓';
-      btnLabel.textContent = 'Up to Date';
-      btn.className = 'btn-settings success';
-      setTimeout(resetUpdateBtn, 3000);
-    }
-
-  } catch(err) {
-    showUpdateStatus('warn', 'Update check failed: ' + err.message);
-    resetUpdateBtn();
-  }
-
-  btn.disabled = false;
-}
-
-function showUpdateStatus(type, msg) {
-  const el = document.getElementById('updateStatus');
-  el.className = `update-status show ${type}`;
-  el.textContent = msg;
-}
-
-function resetUpdateBtn() {
-  const btn = document.getElementById('updateBtn');
-  btn.disabled = false;
-  btn.className = 'btn-settings';
-  document.getElementById('updateBtnIcon').textContent  = '↻';
-  document.getElementById('updateBtnLabel').textContent = 'Check for Updates';
-}
-
-function addReloadButton() {
-  // Remove existing reload btn if any
-  const existing = document.getElementById('reloadBtn');
-  if (existing) existing.remove();
-
-  const reloadBtn = document.createElement('button');
-  reloadBtn.id = 'reloadBtn';
-  reloadBtn.className = 'btn-settings success';
-  reloadBtn.innerHTML = '<span>↺</span><span>Reload &amp; Apply Update</span>';
-  reloadBtn.onclick = () => {
-    // Tell waiting SW to take control, then reload
-    navigator.serviceWorker.getRegistration().then(reg => {
-      if (reg && reg.waiting) {
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-      window.location.reload();
-    });
-  };
-  document.getElementById('updateStatus').insertAdjacentElement('afterend', reloadBtn);
-}
-
-// ─── SERVICE WORKER ───────────────────────────────────────────
-let swReg = null;
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(reg => {
-      swReg = reg;
-      // If a new SW takes control, reload the page
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
-      });
-    })
-    .catch(err => console.warn('SW reg failed:', err));
-}
-</script>
 </body>
 </html>
